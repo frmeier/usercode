@@ -1,0 +1,56 @@
+README
+======
+
+Feb28 2012: Creation of this file
+
+Files in this directory were used for private production of samples for the Lambda_b lifetime analysis BPH-11-013
+
+Two type of samples were produced: LambdaB and B0.
+
+First step: GEN to DIGI2RAW:
+----------------------------
+
+- PYTHIA6_exclLambdaBtoJpsiMuMu_7TeV_cff_py_GEN_SIM_DIGI_L1_DIGI2RAW.py
+  This is the configuration to generate LambdaB -> Jpsi Lambda where Jpsi -> mu mu and Lambda -> p pi exclusively, i.e. no other decay modes except what Geant might add.
+  Requires LambdaB_JPsiLambda_ppi.dec and evtLbB0Pdg11.pdl
+
+- PYTHIA6_B0ToJpsiKs_7TeV_EvtGen_Frank_cff_py_GEN_SIM_DIGI_L1_DIGI2RAW.py
+  This is the configuration to generate B0 -> Jpsi Kshort where Jpsi -> mu mu and Kshort -> pi pi exclusively, i.e. no other decay modes except what Geant might add.
+  Requires B0ToJpsiKs.dec and evtLbB0Pdg11.pdl
+
+- LambdaB_JPsiLambda_ppi.dec
+  Exclusive decay file to force LambdaB -> Jpsi Lambda. Jpsi forced to mu mu and Lambda forced to p pi.
+
+- B0ToJpsiKs.dec
+  Exclusive decay file to force B0 -> Jpsi K0. Jpsi forced to mu mu. Recall that K0 will decay to Kshort and later to the pions in Geant.
+
+- evtLbB0Pdg11.pdl
+  This pdl file is adjusted to reflect the most current state as is layed out in PDG (online version as of 6/16/2011)
+
+  Parameter     Lambda_b            B0        units
+  --------- ---------------- ---------------- -----------
+  Mass      5.6240 -> 5.6202 5.2794 -> 5.2795 GeV/c2
+  Lifetime     368 -> 427     460.5 -> 455.4  um as c*tau
+                      1.425                   ps
+  
+
+The following files were only used for some private studies. They are here for reference but are not used in the analysis.
+
+- evt_B0long.pdl
+  evt.pdl with 10 times longer B0 lifetime
+
+- evt_B0short.pdl
+  evt.pdl with 2 times shorter B0 lifetime
+
+Second step: HLT to RECO:
+-------------------------
+- PYTHIA6_B0ToJpsiKs_7TeV_EvtGen_Frank_cff_py_GEN_SIM_DIGI_L1_DIGI2RAW_root_HLT_RAW2DIGI_L1Reco_RECO.py
+  Configuration file for LambdaB, requires HLT_quarkonium_1E33_3E33_cff.py
+
+- PYTHIA6_exclLambdaBtoJpsiMuMu_7TeV_cff_py_GEN_SIM_DIGI_L1_DIGI2RAW_root_HLT_RAW2DIGI_L1Reco_RECO.py
+  Configuration file for B0, requires HLT_quarkonium_1E33_3E33_cff.py
+
+- HLT_quarkonium_1E33_3E33_cff.py
+  HLT definition as found here https://espace.cern.ch/cms-quarkonia/onia-polarization/Generating%20Events/Detector%20simulation%20for%201E33.aspx
+  The actual file is listed further down, direct link is https://espace.cern.ch/cms-quarkonia/onia-polarization/Shared%20Documents/L%201-HLT/2011/HLT_quarkonium_1E33_3E33_cff.py
+
