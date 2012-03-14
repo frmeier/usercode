@@ -1,0 +1,6 @@
+The contents of this directory consists of macros, shell scripts and other stuff used for the analysis of Lambda_b lifetime (BPH-11-013)
+
+All macros need to be compiled in root using filename.C+. They require 'reduced trees' (as described in AN-12-044 using code from HeavyFlavorAnalysis/Lb2JpsiL0/macros). In some cases they need a 'very reduced tree' which can be created using mkDecTree.C in this directory.
+
+Some comments are in German, especially for the quick-and-dirty ones. If you need to understand them, drop me an email and I'll help.
+
