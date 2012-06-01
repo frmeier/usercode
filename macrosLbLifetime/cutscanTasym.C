@@ -68,12 +68,18 @@ cutscanresult doScan(TTree *tree, TCanvas *c, std::string hname, const cutSet &c
     const int cSizeX = TMath::Ceil((double)nHistos/(double)cSizeY);
     c->Divide(cSizeX,cSizeY);
 
-    Double_t sigLo, sigHi, bgrLo, nBgr;
+    Double_t sigLo, sigHi, bgrLo, nSig, nBgr;
     std::string massstring, timestring;
     if (isB0)
-	{ sigLo = 5.24897; sigHi = 5.30833; bgrLo = 5.32323; nBgr = 710.5; massstring = "mB0"; timestring = "ct3dB0";}
+    {
+	sigLo = 5.24976; sigHi = 5.30849; bgrLo = 5.32571; nSig = 5697; nBgr = 615.4;
+	massstring = "mB0"; timestring = "ct3dB0";
+    }
     else
-	{ sigLo = 5.57042; sigHi = 5.66637; bgrLo = 5.47359; nBgr = 685.264; massstring = "mlb"; timestring = "ct3dlb";}
+    {
+	sigLo = 5.57884; sigHi = 5.65855; bgrLo = 5.68451; nSig = 752.2; nBgr = 332.4;
+	massstring = "mlb"; timestring = "ct3dlb";
+    }
     string sigCut = massstring + ">" + toString(sigLo) + "&&" + massstring + "<" + toString(sigHi);
     string bgrCut = massstring + ">" + toString(bgrLo);
     string hstring = "(80,-5e-12,15e-12)";
@@ -94,6 +100,9 @@ cutscanresult doScan(TTree *tree, TCanvas *c, std::string hname, const cutSet &c
 	std::string hbgri_name = "hbgri"+hname+toString(i);
 	cout << ("ct3dlb>>"+hsig_name+hstring) << endl;
 
+	cout << "timestring+>>+hsig_name+hstring:" << (timestring+">>"+hsig_name+hstring) << endl;
+	cout << "cs.getCut(pv) + && + sigCut: " << (cs.getCut(pv) + "&&" + sigCut) << endl;
+
 	tree->Draw((timestring+">>"+hsig_name+hstring).c_str(), (cs.getCut(pv) + "&&" + sigCut).c_str());
 	tree->Draw((timestring+">>"+hbgr_name+hstring).c_str(), (cs.getCut(pv) + "&&" + bgrCut).c_str(), "same");
 	tree->Draw(("-"+timestring+">>"+hbgri_name+hstring).c_str(), (cs.getCut(pv) + "&&" + bgrCut).c_str(), "same");
@@ -110,8 +119,10 @@ cutscanresult doScan(TTree *tree, TCanvas *c, std::string hname, const cutSet &c
 	hbgri->SetLineStyle(2);
 	hbgri->SetLineWidth(1);
 
-	hbgr->Scale(nBgr/hbgr->GetEntries());
-	hbgri->Scale(nBgr/hbgr->GetEntries());
+	//const double scale = nBgr/hbgr->GetEntries(); // old
+	const double scale = hsig->GetEntries()/hbgr->GetEntries()*nBgr/(nBgr+nSig); // same as in sidebandsubstracted plots
+	hbgr->Scale(scale);
+	hbgri->Scale(scale);
 
 	hsig->SetTitle(((isB0 ? "B^{0} " : "#Lambda_{b} ") + cs.getCutTitle(cutToVary) + " " + toString(cutval)).c_str());
 	hsig->GetXaxis()->SetTitle("Lifetime (ps)");
@@ -237,7 +248,7 @@ void cutscan(std::string fullPath)
 
     // Select cuts to use
     Cuts cuts;
-    cuts.selectCut("acc04Lb","HLT_jpsiBarrel","lb07","iso01");
+    cuts.selectCut("acc04Lb", "muSoft", "HLT_jpsiBarrel","lb09");
 
     // Cutstring
     cutSet cs = cuts.cs;
@@ -257,10 +268,6 @@ void cutscan(std::string fullPath)
     cutlist.push_back(cutscanitem(cs.getCutPos("ptgangDRl0"),26,0.005,0.060));
     cutlist.push_back(cutscanitem(cs.getCutPos("d3l0"),12,0.5,10));
     cutlist.push_back(cutscanitem(cs.getCutPos("d3l0/d3El0"),12,1.0,16));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ptlb"),16,5.0,15.0));
-
-    cutlist.push_back(cutscanitem(cs.getCutPos("isoClostrk"),21,0,22));
-    cutlist.push_back(cutscanitem(cs.getCutPos("isoDocatrk"),21,0,0.2));
 
     if(fVerbose>-1) cout << "Current full cut string is:" << endl;
     if(fVerbose>-1) cout << cs.getCut(parvec) << endl;
@@ -273,8 +280,9 @@ void cutscan(std::string fullPath)
     unsigned int nGraphs(1); // no. of TGraphs per scan
     unsigned int nGrDrawn(0); // counter for the graphs drawn so far
     c1->Clear();
-    const double c1w = nGraphs*200;
-    const double c1h = cutlist.size()*200;
+    const unsigned int nPlots(sqrt(cutlist.size())+1);
+    const double c1w = nPlots*200;
+    const double c1h = nPlots*200;
     c1->SetWindowSize(c1w, c1h);
     //c1->SetCanvasSize(c1w, c1h);
     //c1->Divide(nGraphs,cutlist.size());

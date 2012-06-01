@@ -22,11 +22,11 @@ void doMassT3dPlot(TTree *tree, string title = "default title", double lumiPb = 
     TCanvas *c1 = new TCanvas("mtplane","mass lifetime plot", 800,600);
     gStyle->SetPalette(1);
     // define plot range
-    const double massLo(4.6), massHi(6.0);
+    const double massLo(4.6), massHi(6.3);
     const double tLo(-5e-12), tHi(25e-12);
     string cut = "mass>" + toString(massLo) + "&&mass<" + toString(massHi) + "&&t>" + toString(tLo) + "&&t<" + toString(tHi);
     // define binning
-    const int nBinsMass(20), nBinsT(20);
+    const int nBinsMass(34), nBinsT(20);
     const string histoName = "histo";
     string toDraw = "mass:t>>" + histoName +
 	"(" + toString(nBinsT) + "," + toString(tLo) + "," + toString(tHi) +

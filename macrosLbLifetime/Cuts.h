@@ -59,7 +59,8 @@ class Cuts
 	{
 	};
 
-	void selectCut(std::string name1, std::string name2 = "", std::string name3 = "", std::string name4 = "")
+	void selectCut(std::string name1, std::string name2 = "", std::string name3 = "", std::string name4 = "",
+	       	std::string name5 = "", std::string name6 = "", std::string name7 = "")
 	{
 	    init();
 	    cout << "selectCut: ";
@@ -67,6 +68,9 @@ class Cuts
 	    if (name2 != "") { select1Cut(name2); cout << name2 << " "; }
 	    if (name3 != "") { select1Cut(name3); cout << name3 << " "; }
 	    if (name4 != "") { select1Cut(name4); cout << name4 << " "; }
+	    if (name5 != "") { select1Cut(name5); cout << name5 << " "; }
+	    if (name6 != "") { select1Cut(name6); cout << name6 << " "; }
+	    if (name7 != "") { select1Cut(name7); cout << name7 << " "; }
 	    cout << endl;
 	};
 
@@ -100,18 +104,28 @@ class Cuts
 	void selectCut110303();
 	void selectCut110303exp();
 	void selectCut110413();
-	void selectCut110525();
-	void selectCut120309();
+	void selectCutLb110525();
+	void selectCutLb120309();
+	void selectCutLb120315();
+	void selectCutLb120417();
+	void selectCutLb120420();
+	void selectCutLb120523();
 	void selectCut110203exp();
 	void selectCut110203exp2();
 	void selectCut110222exp();
 	void selectCutB0_110628();
 	void selectCutB0_110628exp();
+	void selectCutB0_120315();
+	void selectCutB0_120414();
+	void selectCutB0_120416();
+	void selectCutB0_120420();
+	void selectCutB0_120523();
 	void selectCutAcceptance110120();
 	void selectCutAcceptance110131();
 	void selectCutAcceptance110210();
 	void selectCutAcceptance110210B0();
 	void selectCutAcceptance111215tracker50();
+	void selectCutAcceptance120523tracker50();
 	void selectCutAcceptance111215global50();
 	void selectCutAcceptance111215_Ks();
 	void selectCutAcceptance111215_L0();

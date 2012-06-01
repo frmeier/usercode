@@ -18,13 +18,13 @@ void do2dProfilePlot(TTree *t, string hname, string todraw, string cut,
     const std::string plotstring = todraw + ">>" + hname;
     t->Draw(plotstring.c_str(), cut.c_str());
     gPad->SetLeftMargin(.15);
-    gPad->SetRightMargin(.2);
+    gPad->SetRightMargin(.1);
     gPad->SetTopMargin(.1);
     gPad->SetBottomMargin(.12);
     h->SetTitle(title.c_str());
-    h->GetXaxis()->SetTitle(unitX.size()>0 ? (titleX+" / "+unitX).c_str() : titleX.c_str());
+    h->GetXaxis()->SetTitle(valueWithUnit(titleX, unitX).c_str());
     h->GetXaxis()->SetNdivisions(505);
-    h->GetYaxis()->SetTitle(unitY.size()>0 ? (titleY+" / "+unitY).c_str() : titleY.c_str());
+    h->GetYaxis()->SetTitle(valueWithUnit(titleY, unitY).c_str());
     h->SetMaximum(maxY);
     h->SetMinimum(minY);
     return; 

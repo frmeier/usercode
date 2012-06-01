@@ -66,7 +66,7 @@ doMassFitLb01_fitresults doMassFitLb01(TTree * tree, const double lumi, const st
     //const double valLo(5.35), valHi(5.90);
     //const int nBins(33);
 
-    RooRealVar mass("mlb", "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
+    RooRealVar mass("mbc", "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
     RooDataSet data("data", "Lambda_b dataset", tree, mass);
 
     //   mass fit
@@ -167,12 +167,12 @@ doMassFitLb01_fitresults doMassFitLb01_DG(TTree * tree, const double lumi, const
     //const double valLo(5.35), valHi(5.90);
     //const int nBins(33);
 
-    RooRealVar mass("mlb", "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
+    RooRealVar mass("mbc", "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
     RooDataSet data("data", "B0 dataset", tree, mass);
 
     //   mass fit
     RooRealVar mean("mean","mean",5.62,5.60,5.64);
-    RooRealVar sigma1("sigma1","sigma1",0.010,0.005,0.020);
+    RooRealVar sigma1("sigma1","sigma1",0.010,0.005,0.015);
     RooRealVar sigma2("sigma2","sigma2",0.030,0.010,0.050);
     RooGaussian sig1("sig1","signal Gaussian 1",mass,mean,sigma1);
     RooGaussian sig2("sig2","signal Gaussian 2",mass,mean,sigma2);
@@ -289,7 +289,7 @@ doMassFitLb01_fitresults doMassFitLb01_DG(TTree * tree, const double lumi, const
     res.bgr = nbkg_val;
     res.soversqrtsb = nsig_val/sqrt(nsig_val+nbkg_val);
     res.soverb = nsig_val/nbkg_val;
-    res.mass = mass.getVal();
+    res.mass = mean.getVal();
     res.width = sigma1.getVal();
     return res;
 }

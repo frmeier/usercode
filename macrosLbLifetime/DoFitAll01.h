@@ -459,7 +459,7 @@ class DoFitAll01
 		fw.addLine("sigma 2: " + roundToString(bgr_sigma2->getVal()*scale,3) + " #pm " + roundToString(bgr_sigma2->getError()*scale,3) + " " + unit);
 		fw.addLine("frac 1: " + roundToString(bgr_frac1->getVal(),3)         + " #pm " + roundToString(bgr_frac1->getError(),3));
 		fw.addLine("sig frac: " + roundToString(sig_frac->getVal(),3)         + " #pm " + roundToString(sig_frac->getError(),3));
-		//fw.addLine("#chi^{2}/ndof: " + roundToString(frame->chiSquare(),3));
+		fw.addLine("#chi^{2}/ndof: " + roundToString(frame->chiSquare(),3));
 	    };
 	    void markWorkInProgress(RooPlot* frame)
 	    {
@@ -632,6 +632,7 @@ class DoFitAll01
 
 	// ======================================================================================================= dataset initialisers
 	void initMCB0datasets();
+	void initMCLbdatasets();
 	void initDataB0datasets();
 	void initDataLbdatasets();
 
@@ -661,7 +662,8 @@ class DoFitAll01
 	RooDataSet *dataMCLb_, *dataDatB0_, *dataDatLb_;
 
 	// ------------------------------ dataset containers
-	DoFitAll01_dataset ds_MCB0_, ds_MCB0match_, ds_MCB0nomatch_;
+	//DoFitAll01_dataset ds_MCB0_, ds_MCB0match_, ds_MCB0nomatch_;
+	DoFitAll01_dataset ds_MCB0match_, ds_MCLbbarrel;
 	DoFitAll01_dataset ds_dataB0barrel, ds_dataLbbarrel;
 
 	// ------------------------------ observables from data: mass, time and time diff (MC only, resolution studies)

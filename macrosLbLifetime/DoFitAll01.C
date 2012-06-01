@@ -81,11 +81,12 @@ void DoFitAll01::Init()
 
     isPrelim = false;
     isWorkInProgress = true;
-    noTitle = true;
+    noTitle = false;
 }
 
 void DoFitAll01::initMCB0datasets()
 {
+    /*
     if (!ds_MCB0_.isInitialised)
     {
 	ds_MCB0_.filename = "../data/vrt_r276_nocut.root";
@@ -95,11 +96,11 @@ void DoFitAll01::initMCB0datasets()
 	ds_MCB0_.rds = new RooDataSet("rds_dataMCB0", "dataset MC B0 all", RooArgSet(*rrvMCB0_m_, *rrvMCB0_t_, *rrvMCB0_dt_),
 		RooFit::Import(*ds_MCB0_.tree));
 	ds_MCB0_.isInitialised = true;
-    }
+    }*/
 
     if (!ds_MCB0match_.isInitialised)
     {
-	ds_MCB0match_.filename = "../data/vrt_r276_MCmatch.root";
+	ds_MCB0match_.filename = "../data/vrt_r316_B0_mc_match_barrel.root";
 	ds_MCB0match_.treename = "fittree";
 	openFileAndGetTree(ds_MCB0match_);
 	//openFileAndGetTree(ds_MCB0match_, "vrtMCB0match");
@@ -108,6 +109,7 @@ void DoFitAll01::initMCB0datasets()
 	ds_MCB0match_.isInitialised = true;
     }
 
+    /*
     if (!ds_MCB0nomatch_.isInitialised)
     {
 	ds_MCB0nomatch_.filename = "../data/vrt_r276_noMCmatch.root";
@@ -117,14 +119,14 @@ void DoFitAll01::initMCB0datasets()
 	ds_MCB0nomatch_.rds = new RooDataSet("rds_dataMCB0nomatch", "dataset MC B0 not truth matched events",
 		RooArgSet(*rrvMCB0_m_, *rrvMCB0_t_, *rrvMCB0_dt_), RooFit::Import(*ds_MCB0nomatch_.tree));
 	ds_MCB0nomatch_.isInitialised = true;
-    }
+    }*/
 }
 
 void DoFitAll01::initDataB0datasets()
 {
     if (!ds_dataB0barrel.isInitialised)
     {
-	ds_dataB0barrel.filename = "../data/vrt_B0_259_263_cuts_barrel.root";
+	ds_dataB0barrel.filename = "../data/vrt_r315_B0_data_barrel.root";
 	ds_dataB0barrel.treename = "fittree";
 	openFileAndGetTree(ds_dataB0barrel);
 	ds_dataB0barrel.rds = new RooDataSet("rds_dataDataB0barrel", "dataset data B0 barrel", RooArgSet(*rrvMCB0_m_, *rrvMCB0_t_),
@@ -137,12 +139,25 @@ void DoFitAll01::initDataLbdatasets()
 {
     if (!ds_dataLbbarrel.isInitialised)
     {
-	ds_dataLbbarrel.filename = "../data/vrt_lb_265_269_cuts_barrel.root";
+	ds_dataLbbarrel.filename = "../data/vrt_r313_lb_data_barrel.root";
 	ds_dataLbbarrel.treename = "fittree";
 	openFileAndGetTree(ds_dataLbbarrel);
 	ds_dataLbbarrel.rds = new RooDataSet("rds_dataDataLbbarrel", "dataset data Lb barrel", RooArgSet(*rrvDatLb_m_, *rrvDatLb_t_),
 		RooFit::Import(*ds_dataLbbarrel.tree));
 	ds_dataLbbarrel.isInitialised = true;
+    }
+}
+
+void DoFitAll01::initMCLbdatasets()
+{
+    if (!ds_MCLbbarrel.isInitialised)
+    {
+	ds_MCLbbarrel.filename = "../data/vrt_r313_lb_data_barrel.root";
+	ds_MCLbbarrel.treename = "fittree";
+	openFileAndGetTree(ds_MCLbbarrel);
+	ds_MCLbbarrel.rds = new RooDataSet("rds_dataDataLbbarrel", "dataset data Lb barrel", RooArgSet(*rrvDatLb_m_, *rrvDatLb_t_),
+		RooFit::Import(*ds_MCLbbarrel.tree));
+	ds_MCLbbarrel.isInitialised = true;
     }
 }
 
@@ -522,6 +537,7 @@ void DoFitAll01::doFitDataLbmass()
     mdtgbdgDataLblifetime.plotOnFrame(curFrame.get(), fnCPU_);
     mdtgbdgDataLblifetime.writeResultsOnFrame(curFrame.get(), 1e12, "ps");
     curFrame->Draw();
+    gPad->SetLogy(1);
     curCanvas->SaveAs(("DoFitAll01plot_"+mdtgbdgDataLblifetime.name+".pdf").c_str());
 }
 

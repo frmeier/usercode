@@ -15,7 +15,7 @@ struct Datafile
 
 	std::string filename;
 	std::string title;
-	double lumi; // in /ub as given by lumicalc
+	double lumi; // in /pb
 	double events;
 	int runMin;
 	int runMax;
@@ -34,7 +34,7 @@ struct Datafiles
 	    }
 	    return ret;
 	};
-	double getLumiPb() { return 0.000001 * getLumi(); };
+	double getLumiPb() { return getLumi(); };
 	double getLumiPbRounded() { return int(getLumiPb()+.5); };
 	double getEvents()
 	{

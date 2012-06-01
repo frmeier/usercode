@@ -68,7 +68,7 @@ doMassFitB001_fitresults doMassFitB001(TTree * tree, const double lumi, const st
     //const double valLo(5.35), valHi(5.90);
     //const int nBins(33);
 
-    RooRealVar mass("mB0", "J/#psi K_{s} mass [GeV/c^{2}]", valLo, valHi);
+    RooRealVar mass("mbc", "J/#psi K_{s} mass [GeV/c^{2}]", valLo, valHi);
     RooDataSet data("data", "B0 dataset", tree, mass);
 
     //   mass fit
@@ -171,7 +171,7 @@ doMassFitB001_fitresults doMassFitB001_DG(TTree * tree, const double lumi, const
     //const double valLo(5.35), valHi(5.90);
     //const int nBins(33);
 
-    RooRealVar mass("mB0", "J/#psi K_{s} mass [GeV/c^{2}]", valLo, valHi);
+    RooRealVar mass("mbc", "J/#psi K_{s} mass [GeV/c^{2}]", valLo, valHi);
     RooDataSet data("data", "B0 dataset", tree, mass);
 
     //   mass fit
@@ -293,7 +293,7 @@ doMassFitB001_fitresults doMassFitB001_DG(TTree * tree, const double lumi, const
     res.bgr = nbkg_val;
     res.soversqrtsb = nsig_val/sqrt(nsig_val+nbkg_val);
     res.soverb = nsig_val/nbkg_val;
-    res.mass = mass.getVal();
+    res.mass = mean.getVal();
     res.width = sigma1.getVal();
     return res;
 }

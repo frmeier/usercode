@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 template <typename T>
 std::string toString(T i)
@@ -65,6 +66,32 @@ std::string concatCutString(const std::string s1, const std::string s2, const st
 	return concatCutString(ret, s3, s4, s5);
     else
 	return ret;
+}
+
+std::string makePlotsString(const std::string &toPlot, const std::string &hname, const int &nBins, const double &lo, const double &hi)
+{
+    return toPlot + ">>" + hname + "(" + toString(nBins) + "," + toString(lo) + "," + toString(hi) + ")";
+}
+
+std::vector<double> variableBinSizeVec(double v0, double v1, double v2 = -9999, double v3 = -9999, double v4 = -9999, double v5 = -9999, double v6 = -9999,
+	double v7 = -9999, double v8 = -9999, double v9 = -9999, double v10 = -9999, double v11 = -9999, double v12 = -9999, double v13 = -9999)
+{
+    std::vector<double> ret;
+    ret.push_back(v0);
+    ret.push_back(v1);
+    if (v2 != -9999) ret.push_back(v2); else return ret;
+    if (v3 != -9999) ret.push_back(v3); else return ret;
+    if (v4 != -9999) ret.push_back(v4); else return ret;
+    if (v5 != -9999) ret.push_back(v5); else return ret;
+    if (v6 != -9999) ret.push_back(v6); else return ret;
+    if (v7 != -9999) ret.push_back(v7); else return ret;
+    if (v8 != -9999) ret.push_back(v8); else return ret;
+    if (v9 != -9999) ret.push_back(v9); else return ret;
+    if (v10 != -9999) ret.push_back(v10); else return ret;
+    if (v11 != -9999) ret.push_back(v11); else return ret;
+    if (v12 != -9999) ret.push_back(v12); else return ret;
+    if (v13 != -9999) ret.push_back(v13); else return ret;
+    return ret;
 }
 
 #endif
