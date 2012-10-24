@@ -1,257 +1,204 @@
+#include "Configure.C"
+#include <iomanip>
+#include <sstream>
+
+#include "TFile.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TString.h"
+#include "TLegend.h"
+#include "TStyle.h"
+#include "utils.h"
+
+#include "RooFit.h"
+#include "RooRealVar.h"
+#include "RooDataSet.h"
+#include "RooPlot.h"
+#include "RooGaussModel.h"
+#include "RooGaussian.h"
+#include "RooDecay.h"
+#include "RooProdPdf.h"
+#include "RooAddPdf.h"
+#include "RooPolynomial.h"
+#include "RooTruthModel.h"
+#include "RooEffProd.h"
+#include "RooAddModel.h"
+#include "TH2F.h"
+#include "TLatex.h"
+
 using namespace RooFit;
-using namespace TString;
 using namespace std;
 
-#include <iomanip>
+TTree *tree;
+ofstream result;
+ConfigData cfg;
 
-Double_t mass_low, mass_high;
-Double_t masspeak;
 Double_t yield_nonprompt, yield_sig, yield_prompt;
 Double_t two_sigma_upper, two_sigma_lower, three_sigma_upper, three_sigma_lower;
-
-TFile *f;
-TTree *tree;
 TCanvas *c1, *c2, *c3;
-TString name1("M_vs_lt"), name2("projections"), name3("slices");
-TString title1, title2, title3;
+TString name_c1("M_vs_lt"), name_c2("projections"), name_c3("slices");
 
-TLatex* writeTLatex(std::string text, double x, double y, double size = 0.04)
+void Fit_2D(TString type, TString saveAs = "") // saveAs: without extension
 {
-    TLatex* txt = new TLatex(x,y,text.c_str());
-    txt->SetTextSize(size);
-    txt->SetNDC(true);
-    return txt;
-}
+   if(!Configure(type, cfg)) return;
+   tree=(TTree*) cfg.f->Get("fittree");
 
-string roundToString(double v, streamsize precision)
-{
-    ostringstream oss;
-    oss << setprecision(precision) << fixed << v;
-    return oss.str();
-}
+   RooRealVar mass("mass", "mass [GeV/c^{2}]", cfg.mass_low, cfg.mass_high);
+   RooRealVar t("t", "lifetime [ps]", -1.0e-12, 15e-12);
+   RooRealVar tE("tE", "lifetime error", 0, 1e-12);
+   RooRealVar weight("weight","Event weight", 1, 10);
+   RooDataSet data("data", "data", tree, RooArgSet(mass, t, tE));
+   //   RooDataSet data("data", "data", tree, RooArgSet(mass, t, weight), "", "weight");
+ 
+   /*********************************************************************************************
+    *    Non-prompt background = 1st order polynomial (mass) x (Decay (x) double Gauss)(lifetime)
+    *    Prompt background = 1st order polynomial (mass) x double Gauss (lifetime)
+    *********************************************************************************************/
 
-Fit_2D(TString type)
-{
-  bool no_prompt = false;
-  bool no_nonprompt = false;
-  bool no_bkgd = false;
-  bool reduced_lt = true;
-  bool displaced = false;
-  if(type.Contains("noprompt",kIgnoreCase)) no_prompt = true;
-  if(type.Contains("nonon",kIgnoreCase)) no_nonprompt = true;
-  if(type.Contains("nobk",kIgnoreCase)) no_bkgd = true;
-  if(type.Contains("full",kIgnoreCase)) reduced_lt = false;
-  if(type.Contains("disp",kIgnoreCase)) displaced = true;
+   if(cfg.prompt_bk){
+      RooRealVar reso_mean("reso_mean", "mean of resolution function", 0);
+   // prompt mass polynomial
+      RooRealVar prompt_p1("prompt_p1","Linear coefficient of prompt background mass polynomial",0.1, -0.2, 5.0);
+      RooPolynomial prompt_mass("prompt_mass", "Linear function for prompt background mass", mass, RooArgList(prompt_p1));
+   // prompt lifetime resolution
+      RooRealVar prompt_sigma_core("prompt_sigma_core","Gauss sigma core of prompt background", 1e-13, 5e-14, 1.2e-13);
+      RooRealVar prompt_sigma_tail("prompt_sigma_tail","Gauss sigma tail of prompt background", 2e-13, 1.2e-13, 9e-13);
+      RooGaussian prompt_core("prompt_core","Gauss core for prompt background", t, reso_mean, prompt_sigma_core);
+      RooGaussian prompt_tail("prompt_tail","Gauss tail for prompt background", t, reso_mean, prompt_sigma_tail);
+      RooRealVar core_frac("core_frac","Fraction of core in prompt background",0.8, 0.5, 0.99);
+      RooAddPdf prompt_lt("prompt_lt","Double Gauss for prompt background lifetime",RooArgList(prompt_core, prompt_tail), core_frac);
+      RooProdPdf prompt("prompt","Prompt 2D background model", RooArgSet(prompt_mass, prompt_lt));   
 
-  if(type.Contains("B0",kIgnoreCase)) {          // B0
-     mass_low=5.16;
-     mass_high=6.0;
-     masspeak=5.3;
-     if(type.Contains("mc", kIgnoreCase)){       // B0 MC
-        if(reduced_lt){
-          if(displaced) {
-             f=new TFile("data/vrt_r337_B0_MC_B004_displ_red.root");
-             title1=TString("B^{0} mass vs reduced lifetime, Monte Carlo, displaced vertex trigger");  
-             title2=TString("B^{0} mass and reduced lifetime projections, Monte Carlo, displaced vertex trigger");  
-             title3=TString("B^{0} reduced lifetime projections, Monte Carlo, displaced vertex trigger");  
-          } else {
-             f=new TFile("data/vrt_r337_B0_MC_B004_red.root");
-             title1=TString("B^{0} mass vs reduced lifetime, Monte Carlo, barrel trigger");  
-             title2=TString("B^{0} mass and reduced lifetime projections, Monte Carlo, barrel trigger");  
-             title3=TString("B^{0} reduced lifetime projections, Monte Carlo, barrel trigger");  
-          }
-        } else {
-           if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-           }
-           //f=new TFile("data/vrt_r337_372_376_377_378_MCmix.root");
-           f=new TFile("data/vrt_r337_B0_MC_B004.root");
-           title1=TString("B^{0} mass vs lifetime, Monte Carlo, barrel trigger");  
-           title2=TString("B^{0} mass and lifetime projections, Monte Carlo, barrel trigger");  
-           title3=TString("B^{0} lifetime projections, Monte Carlo, barrel trigger");  
-        }
-     } else {                                    // B0 data
-        if(reduced_lt) {
-          if(displaced) {
-             f=new TFile("data/vrt_r355_359_data_B004_displ_red.root");
-             title1=TString("B^{0} mass vs reduced lifetime, data, displaced vertex trigger");  
-             title2=TString("B^{0} mass and reduced lifetime projections, data, displaced vertex trigger");  
-             title3=TString("B^{0} reduced lifetime projections, data, displaced vertex trigger");  
-          } else {
-             f=new TFile("data/vrt_r355_359_data_B004_red.root");
-             title1=TString("B^{0} mass vs reduced lifetime, data, barrel trigger");  
-             title2=TString("B^{0} mass and reduced lifetime projections, data, barrel trigger");  
-             title3=TString("B^{0} reduced lifetime projections, data, barrel trigger");  
-          }
-        } else {
-           if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-           }
-           f=new TFile("data/vrt_r355_359_data_B004.root");
-           title1=TString("B^{0} mass vs lifetime, data, barrel trigger");  
-           title2=TString("B^{0} mass and lifetime projections, data, barrel trigger");  
-           title3=TString("B^{0} lifetime projections, data, barrel trigger");  
-        }
-     }
-  } else {                                       // Lambda_b
-     mass_low=5.4;
-     mass_high=6.0;
-     masspeak=5.62;
-     if(type.Contains("mc", kIgnoreCase)){       // Lambda_b MC
-        if(reduced_lt){
-          if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-          } else {
-              printf("No input file defined\n");
-              return 0;  
-          }
-        } else {
-           if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-           }
-           f=new TFile("data/vrt_MC5mix_332_346_347_438_349_cuts_notrigsel.root");
-           //f=new TFile("data/vrt_r332_360_361.root");
-           title1=TString("#Lambda_{b} mass vs lifetime, Monte Carlo, barrel trigger");  
-           title2=TString("#Lambda_{b} mass and lifetime projections, Monte Carlo, barrel trigger");  
-           title3=TString("#Lambda_{b} lifetime projections, Monte Carlo, barrel trigger");  
-        }
-     } else {                                    // Lambda_b data
-        if(reduced_lt) {
-           if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-           } else {
-              printf("No input file defined\n");
-              return 0; 
-           }
-        } else {
-           if(displaced) {
-              printf("No input file defined\n");
-              return 0;
-           }
-           //f=new TFile("data/vrt_r350_354_plusMCbgr.root"); 
-           f=new TFile("data/vrt_r350_354.root"); 
-           title1=TString("#Lambda_{b} mass vs lifetime, data, barrel trigger");  
-           title2=TString("#Lambda_{b} mass and lifetime projections, data, barrel trigger");  
-           title3=TString("#Lambda_{b} lifetime projections, data, barrel trigger");  
-        }
-     }
+      RooGaussModel reso_core("reso_core", "First Gauss of resolution function", t, reso_mean, prompt_sigma_core);
+      RooGaussModel reso_tail("reso_tail", "Second Gauss of resolution function", t, reso_mean, prompt_sigma_tail);
+      RooAddModel tau_reso("tau_reso", "Double Gauss of resolution function", RooArgList(reso_core, reso_tail), core_frac);
+   } else {
+      RooRealVar tau_reso_sigma("tau_reso_sigma","Sigma of lifetime resolution function",0.1e-13, 1e-15,9.0e-13) ;
+      //      tau_reso_sigma=6.26e-14;
+      //      tau_reso_sigma.setConstant(kTRUE);
+      RooGaussModel tau_reso("tau_reso","Gauss of lifetime resolution function", t, RooConst(0), tau_reso_sigma) ;
    }
-   tree=(TTree*)f->Get("fittree");
 
-   RooRealVar mass("mass","mass",mass_low,mass_high);
-   RooRealVar t("t","lifetime",-1.0e-12,15e-12);
-   RooRealVar tRed("tRed","Reduced lifetime",-2.0e-12,15e-12);
-   RooRealVar tE("tE","lifetime error",0,1e-12);
-   RooDataSet data("data","data",tree,RooArgSet(mass,t,tRed,tE));
-
-
+   if(cfg.nonprompt_bk){
+      // non-prompt mass polynomial
+      if(cfg.constant_prompt_fraction){
+	 cout<<"Constant prompt-to-nonprompt fraction in mass."<<endl;
+         RooPolynomial nonprompt_mass("nonprompt_mass", "Linear function for nonprompt background mass", mass, RooArgList(prompt_p1));
+         RooPolynomial nonprompt_mass2("nonprompt_mass2", "Linear function for nonprompt background mass", mass, RooArgList(prompt_p1));
+      } else {
+	 cout<<"Different mass polynomials for prompt and nonprompt backgrounds."<<endl;
+         RooRealVar nonprompt_p1("nonprompt_p1","Linear coefficient of nonprompt background mass polynomial", 0.1, -0.2, 0.3);
+         RooRealVar nonprompt_p2("nonprompt_p2","Linear coefficient of nonprompt background mass polynomial", 0.1, -0.2, 0.3);
+         RooPolynomial nonprompt_mass("nonprompt_mass", "Linear function for nonprompt background mass", mass, RooArgList(nonprompt_p1));
+         RooPolynomial nonprompt_mass2("nonprompt_mass", "Linear function for nonprompt background mass", mass, RooArgList(nonprompt_p2));
+      }
+      // non-prompt lifetime model
+      RooRealVar tau_bk("tau_bk","Background lifetime",1.2e-12, 5e-15, 2e-12);
+      RooDecay nonprompt_lt("nonprompt_lt","decay (x) double Gauss for background lifetime", t, tau_bk, tau_reso, RooDecay::SingleSided) ;
+      if(cfg.single_lt){
+	 cout<<"Nonprompt background has one lifetime component."<<endl;
+         RooProdPdf nonprompt("nonprompt", "Non-prompt background PDF", RooArgSet(nonprompt_mass, nonprompt_lt));   
+      } else {
+	 cout<<"Nonprompt background has two lifetime components."<<endl;
+         RooRealVar tau_bk2("tau_bk2","Second background lifetime",0.6e-12, 5e-15, 2e-12);
+         RooDecay nonprompt_lt2("nonprompt_lt2","decay (x) double Gauss for second background lifetime", t, tau_bk2, tau_reso, RooDecay::SingleSided) ;
+         RooProdPdf nonprompt1("nonprompt1", "Non-prompt background PDF", RooArgSet(nonprompt_mass, nonprompt_lt));   
+         RooProdPdf nonprompt2("nonprompt2", "Non-prompt background PDF", RooArgSet(nonprompt_mass, nonprompt_lt2));
+         RooRealVar lt_frac("lt_frac", "fraction of longer background lifetime", 0.2, 0.01, 0.99);
+         RooAddPdf nonprompt("nonprompt", "Non-prompt background PDF", RooArgList(nonprompt1, nonprompt2), RooArgList(lt_frac));
+      }
+   }
+   
    /***************************************************************************************
-   /*    Signal = Double Gauss (mass) x (Decay (x) double Gauss)(lifetime)
-   /***************************************************************************************/
+    *    Signal = Double Gauss (mass) x (Decay (x) double Gauss)(lifetime)
+    ***************************************************************************************/
 
    //  mass peak 
-   RooRealVar mass_peak("mass_peak","Gauss mean of signal mass peak", masspeak, masspeak-0.04, masspeak+0.04);
-   RooRealVar m_sigma1("m_sigma1","Gauss core sigma for signal mass",0.009,0.005,0.015);
-   RooRealVar m_sigma2("m_sigma2","Gauss tail sigma for signal mass",0.02, 0.01, 0.05);
-   RooGaussian m_gauss1("m_gauss1","Core Gauss for signal mass",mass,mass_peak,m_sigma1);
-   RooGaussian m_gauss2("m_gauss2","Tail Gauss for signal mass",mass,mass_peak,m_sigma2);
-   RooRealVar frac_m_gauss("frac_m_gauss","Fraction of tail Gauss for signal mass",0.4, 0.3, 0.99);
-   RooAddPdf mgauss("mgauss","Double gauss for signal mass",RooArgList(m_gauss1, m_gauss2),RooArgList(frac_m_gauss));
+   RooRealVar mass_peak("mass_peak","Gauss mean of signal mass peak", cfg.masspeak, cfg.masspeak-0.04, cfg.masspeak+0.04);
+   //RooRealVar m_sigma1("m_sigma1","Gauss core sigma for signal mass",0.007,0.001,0.012); // bessere Werte
+   //RooRealVar m_sigma2("m_sigma2","Gauss tail sigma for signal mass",0.02, 0.010, 0.035); //  dito
+   RooRealVar m_sigma1("m_sigma1","Gauss core sigma for signal mass",0.007,0.001,0.009); // Hadi, alter Zustand
+   RooRealVar m_sigma2("m_sigma2","Gauss tail sigma for signal mass",0.02);//, 0.010, 0.035); // Hadi, alter Zustand
+   RooGaussian m_gauss1("m_gauss1","Core Gauss for signal mass", mass, mass_peak, m_sigma1);
+   RooGaussian m_gauss2("m_gauss2","Tail Gauss for signal mass", mass, mass_peak, m_sigma2);
+   RooRealVar frac_m_gauss("frac_m_gauss","Fraction of tail Gauss for signal mass",0.2, 0.1, 0.99);
+   if (cfg.single_sig)
+       RooGaussian mgauss("mgauss","Single gauss for signal mass", mass, mass_peak, m_sigma1);
+   else
+       RooAddPdf mgauss("mgauss","Double gauss for signal mass",RooArgList(m_gauss1, m_gauss2),RooArgList(frac_m_gauss));
 
    // signal lifetime
-   RooRealVar tau("tau","Lambda_b lifetime",1.2e-12, 0.1e-12, 2e-12);
-   RooRealVar tau_reso_mean("reso_mean","Mean of resolution function",0) ;
-   RooRealVar tau_reso_sigma("tau_reso_sigma","Sigma of lifetime resolution function",0.1e-13, 1e-15,9.0e-13) ;
-   if(reduced_lt){
-      RooGaussModel tau_reso_gauss("tau_reso_gauss","Gauss of lifetime resolution function",tRed,tau_reso_mean,tau_reso_sigma) ;
-      RooDecay tau_decay_model("tau_decay_model","decay (x) double Gauss for signal lifetime", tRed, tau, tau_reso_gauss, RooDecay::SingleSided) ;
-   } else {
-      RooGaussModel tau_reso_gauss("tau_reso_gauss","Gauss of lifetime resolution function",t,tau_reso_mean,tau_reso_sigma) ;
-      RooDecay tau_decay_model("tau_decay_model","decay (x) double Gauss for signal lifetime", t, tau, tau_reso_gauss, RooDecay::SingleSided) ;
-   }
+   RooRealVar tau("tau","Lambda_b lifetime",1.5e-12, 0.1e-12, 2e-12);
+   RooDecay tau_decay_model("tau_decay_model","decay (x) double Gauss for signal lifetime", t, tau, tau_reso, RooDecay::SingleSided) ;
    RooProdPdf signal("signal", "Signal PDF", RooArgSet(mgauss, tau_decay_model));
 
-
    /*********************************************************************************************
-   /*    Non-prompt background = 1st order polynomial (mass) x (Decay (x) double Gauss)(lifetime)
-   /*    Prompt background = 1st order polynomial (mass) x double Gauss (lifetime)
-   /*********************************************************************************************/
+    *    Function for efficiency
+    *********************************************************************************************/
 
-   // non-prompt mass polynomial
-   RooRealVar nonprompt_p1("nonprompt_p1","Linear coefficient of nonprompt background mass polynomial", 0.1, -0.2, 0.3);
-   RooPolynomial nonprompt_mass("nonprompt_mass", "Linear function for nonprompt background mass", mass, RooArgList(nonprompt_p1));
-   // non-prompt lifetime model
-   RooRealVar tau_bk("tau_bk","Background lifetime",1.2e-12, 5e-15, 2e-12);
-   RooRealVar tau_reso_sigma_bk("tau_reso_sigma_bk","Sigma of lifetime resolution function for background",1e-14, 1e-15,1.0e-12) ;
-   if(reduced_lt){
-      RooGaussModel tau_reso_bkgd("tau_reso_bkgd","Gauss of lifetime resolution function for background",tRed,tau_reso_mean,tau_reso_sigma_bk) ;
-      RooDecay tau_bkg_model("tau_bkg_model","decay (x) double Gauss for background lifetime", tRed, tau_bk, tau_reso_bkgd, RooDecay::SingleSided) ;
-   } else {
-      RooGaussModel tau_reso_bkgd("tau_reso_bkgd","Gauss of lifetime resolution function for background",t,tau_reso_mean,tau_reso_sigma_bk) ;
-      RooDecay tau_bkg_model("tau_bkg_model","decay (x) double Gauss for background lifetime", t, tau_bk, tau_reso_bkgd, RooDecay::SingleSided) ;}
-   RooProdPdf nonprompt("nonprompt", "Non-prompt background PDF", RooArgSet(nonprompt_mass, tau_bkg_model));   
+   double effSlope(0);
+   if (cfg.type==B0) effSlope = -7.019e9;
+   if (cfg.type==Lambda_b) effSlope = +1.316e9;
+   effSlope*=.5;
+   RooFormulaVar eff("eff",("1.0 + TMath::Abs(t)*"+toString(effSlope)).c_str(),t) ;
 
-   // prompt mass polynomial
-   RooRealVar prompt_p1("prompt_p1","Linear coefficient of prompt background mass polynomial",0.1, -0.2, 5.0);
-   RooPolynomial prompt_mass("prompt_mass", "Linear function for prompt background mass", mass, RooArgList(prompt_p1));
-   // prompt lifetime resolution
-   RooRealVar prompt_peak("prompt_peak","Gauss mean for prompt background",0.);
-   RooRealVar prompt_sigma("prompt_sigma","Sigma for prompt background lifetime",1e-13,5e-14,1e-12);
-   if(reduced_lt) RooGaussian prompt_gauss("prompt_gauss","Gauss for prompt background lifetime",tRed, prompt_peak, prompt_sigma);
-   else RooGaussian prompt_gauss("prompt_gauss","Gauss for prompt background lifetime",t, prompt_peak, prompt_sigma);
-   RooProdPdf prompt("prompt", "Prompt background model", RooArgSet(prompt_mass, prompt_gauss));
+   //RooRealVar eff0("eff0","eff0",1);
+   //RooRealVar eff1("eff1","eff1",cfg.type==B0?-7.019e9:+1.316e9);
+   //RooPolynomial eff("eff","eff",t,RooArgSet(eff0, eff1));
+
+   //RooEffProd modelEff("modelEff","model with efficiency", full_model, eff) ;
 
 
    /*********************************************************************************************
-   /*    Complete 2D model
-   /*********************************************************************************************/
+    *    Complete 2D model
+    *********************************************************************************************/
  
    RooRealVar n_prompt("n_prompt","Number of prompt background events",1000, 0, 50000);
    RooRealVar n_nonprompt("n_nonprompt","Number of non-prompt background events",300, 0, 20000);
-   RooRealVar n_signal("n_signal","Number of signal events",1000, 200, 20000);
-   if(no_bkgd) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal), RooArgList(n_signal));
-   else if(no_prompt) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal, nonprompt), RooArgList(n_signal, n_nonprompt));
-   else if(no_nonprompt) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal, prompt), RooArgList(n_signal, n_prompt));
+   RooRealVar n_signal("n_signal","Number of signal events",4000, 10, 20000);
+   if(cfg.no_bkgd && !cfg.eff) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal), RooArgList(n_signal));
+   else if(cfg.no_bkgd && cfg.eff)
+   {
+       RooAddPdf intermed_model("intermed_model", "Full 2D model", RooArgList(signal), RooArgList(n_signal));
+       RooEffProd full_model("full_model", "Full 2D model", intermed_model, eff);
+   }
+   else if(!cfg.nonprompt_bk) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal, prompt), RooArgList(n_signal, n_prompt));
+   else if(!cfg.prompt_bk) RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal, nonprompt), RooArgList(n_signal, n_nonprompt));
+   else if(cfg.eff)
+   {
+       RooAddPdf intermed_model("intermed_model", "Full 2D model", RooArgList(signal, prompt, nonprompt), RooArgList(n_signal, n_prompt, n_nonprompt));
+       RooEffProd full_model("full_model", "Full 2D model", intermed_model, eff);
+   }
    else RooAddPdf full_model("full_model", "Full 2D model", RooArgList(signal, prompt, nonprompt), RooArgList(n_signal, n_prompt, n_nonprompt));
+   // extract number of parameters in use
+   RooArgSet dummy;
+   const int Npars = full_model->getParameters(dummy).getSize();
+   cout << "Npars: " << Npars << endl;
 
 
    /*********************************************************************************************
-   /*    Do the fitting
-   /*********************************************************************************************/ 
+    *    Do the fitting
+    *********************************************************************************************/ 
 
-   if(reduced_lt) {
-      tRed.setRange("reduced", 5.0e-13, 15e-12);
-      t.setRange("reduced",-1e-12, 15e-12);
-   } else {
-      t.setRange("reduced", -1.0e-12, 15e-12);
-      tRed.setRange("reduced", -2.0e-12, 15e-12);
-   }
-   full_model.fitTo(data, Range("reduced"), Save(kTRUE));
+   t.setRange("all", -1.0e-12, 15e-12);
+
+   full_model.fitTo(data, Save(kTRUE), NumCPU(6));
    
    RooAbsReal *cdf=mgauss.createCdf(mass);
-   two_sigma_upper=cdf->findRoot(mass,mass_low, mass_high, 0.97725);
-   two_sigma_lower=cdf->findRoot(mass,mass_low, mass_high, 0.02275);
-   three_sigma_upper=cdf->findRoot(mass, mass_low, mass_high, 0.99865);
-   three_sigma_lower=cdf->findRoot(mass, mass_low, mass_high, 1.0-0.99865);
+   two_sigma_upper=cdf->findRoot(mass, cfg.mass_low, cfg.mass_high, 0.97725);
+   two_sigma_lower=cdf->findRoot(mass, cfg.mass_low, cfg.mass_high, 0.02275);
+   three_sigma_upper=cdf->findRoot(mass, cfg.mass_low, cfg.mass_high, 0.99865);
+   three_sigma_lower=cdf->findRoot(mass, cfg.mass_low, cfg.mass_high, 1.0-0.99865);
 
 
    /*********************************************************************************************
-   /*     Plot results
-   /*********************************************************************************************/  
+    *     Plot results
+    *********************************************************************************************/  
 
-   if(reduced_lt){
-      TH2* hd = data.createHistogram("hd",tRed,Binning(60),YVar(mass,Binning(20)));
-      TH2* hf = full_model.createHistogram("hf",tRed,Binning(60),YVar(mass,Binning(20))) ;
-   } else {
-      TH2* hd = data.createHistogram("hd",t,Binning(60),YVar(mass,Binning(20)));
-      TH2* hf = full_model.createHistogram("hf",t,Binning(60),YVar(mass,Binning(20))) ;
-   }
-   c1=new TCanvas(name1, title1);
+   TH2* hd = data.createHistogram("hd",t,Binning(60),YVar(mass,Binning(20)));
+   TH2* hf = full_model.createHistogram("hf",t,Binning(60),YVar(mass,Binning(20))) ;
+
+   c1=new TCanvas(name_c1, cfg.title1);
    c1->Divide(2) ;
    c1->cd(1); 
    gPad->SetLogz();
@@ -259,60 +206,172 @@ Fit_2D(TString type)
    c1->cd(2); 
    gPad->SetLogz();
    hf->Draw("surf") ;
+   if (saveAs.Length() !=0 ) c1->SaveAs(saveAs+"_2d.pdf");
 
-   c2=new TCanvas(name2, title2);
+   c2=new TCanvas(name_c2, cfg.title2, 1100, 550);
    c2->Divide(2) ;
    c2->cd(1);
    RooPlot* framex = mass.frame(Title("Mass projection")) ;
-   data.plotOn(framex) ;
-   full_model.plotOn(framex) ;
-   framex->addObject(writeTLatex("mass: " +
-   roundToString(mass_peak.getVal(), 3) + " #pm " +
-   roundToString(mass_peak.getError()+0.0004, 3) + " GeV/c^{2}", 0.15, 0.84, 0.06));
+   data.plotOn(framex, Name("data_m")) ;
+   full_model.plotOn(framex, Range("all"), LineColor(kBlue), Name("model_m"));
+   full_model.plotOn(framex, Components(signal), LineColor(kRed));
+   if(cfg.prompt_bk) full_model.plotOn(framex, Components(prompt), LineStyle(kDashed), LineColor(kBlack));
+   if(cfg.nonprompt_bk) full_model.plotOn(framex, Components(nonprompt), LineStyle(kDotted), LineColor(kBlack));
+   // calculate chi2
+   const double chi2_m = framex->chiSquare("model_m","data_m", Npars) ;
+   framex->addObject(writeTLatex("mass: "+roundToString(mass_peak.getVal(),3)+" #pm "+roundToString(mass_peak.getError()+0.0004, 3)+" GeV/c^{2}", 0.32, 0.85, 0.05));
+   framex->addObject(writeTLatex("#chi^{2}/ndof: "+roundToString(chi2_m, 3), 0.5, 0.80, 0.04));
+   gPad->SetLeftMargin(0.12);
+   gPad->SetRightMargin(0.004);
+   framex->GetYaxis()->SetTitleOffset(1.6);
    framex->Draw();
+
+
    c2->cd(2);
-   gPad->SetLogy();
-   if(reduced_lt) RooPlot* framey = tRed.frame(Title("Lifetime projection")) ;
-   else RooPlot* framey = t.frame(Title("Lifetime projection")) ;
-   data.plotOn(framey) ;
-   full_model.plotOn(framey) ;
-   framey->addObject(writeTLatex("#tau: " +
-   roundToString(tau.getVal()*1e12, 3) + " #pm " +
-   roundToString(tau.getError()*1e12, 3) + " ps", 0.3,
-   0.8, 0.06));
+   gPad->SetLogy(); 
+   RooPlot* framey = t.frame(Title("Lifetime projection")) ;
+   data.plotOn(framey, Name("data_t")) ;
+   full_model.plotOn(framey, Range("all"), LineColor(kBlue), Name("model_t")) ;
+   full_model.plotOn(framey, Components(signal), LineColor(kRed));
+   if(cfg.prompt_bk) full_model.plotOn(framey, Components(prompt), LineStyle(kDashed), LineColor(kBlack));
+   if(cfg.nonprompt_bk) full_model.plotOn(framey, Components(nonprompt), LineStyle(kDotted), LineColor(kBlack));
+
+   // calculate chi2
+   const double chi2_t = framey->chiSquare("model_t","data_t", Npars) ;
+
+   framey->addObject(writeTLatex("#tau: "+roundToString(tau.getVal()*1e12, 3)+" #pm "+roundToString(tau.getError()*1e12, 3)+" ps", 0.5, 0.85, 0.05));
+   framey->addObject(writeTLatex("#chi^{2}/ndof: "+roundToString(chi2_t, 3), 0.5, 0.80, 0.04));
+   gPad->SetLeftMargin(0.10);
+   gPad->SetRightMargin(0.003);
+   framey->GetYaxis()->SetTitleOffset(1.5);
    framey->Draw();
+   if (saveAs.Length() !=0 ) c2->SaveAs(saveAs+"_m_t.pdf");
     
-   return 0;
-   c3=new TCanvas(name3, title3);
+   c3=new TCanvas(name_c3, cfg.title3, 1100, 550);
    c3->cd();
    c3->Divide(3);
    c3->cd(1);
    gPad->SetLogy();
-   mass.setRange("sbl", mass_low, three_sigma_lower);
-   if (reduced_lt) RooPlot* framesbl = tRed.frame(Title("Lower sideband"),Range("sbl")) ;
-   else RooPlot* framesbl = t.frame(Title("Lower sideband"),Range("sbl")) ;
+   mass.setRange("sbl", cfg.mass_low, three_sigma_lower);
+   RooPlot* framesbl = t.frame(Title("Lower sideband"), Range("sbl")) ;
    data.plotOn(framesbl, CutRange("sbl")) ;
    full_model.plotOn(framesbl, ProjectionRange("sbl")) ;
+   full_model.plotOn(framesbl, Components(signal), LineColor(kRed), ProjectionRange("sbl"));
+   if(cfg.prompt_bk) full_model.plotOn(framesbl, Components(prompt), LineStyle(kDashed), LineColor(kBlack), ProjectionRange("sbl"));
+   if(cfg.nonprompt_bk) full_model.plotOn(framesbl, Components(nonprompt), LineStyle(kDotted), LineColor(kBlack), ProjectionRange("sbl"));
+   gPad->SetLeftMargin(0.12);
+   gPad->SetRightMargin(0.004);
+   framesbl->GetYaxis()->SetTitleOffset(1.2);
+   framesbl->GetYaxis()->SetTitleSize(0.045);
+   framesbl->GetXaxis()->SetTitleSize(0.045);
    framesbl->Draw();
 
    c3->cd(2);
    gPad->SetLogy();
    mass.setRange("sig", two_sigma_lower, two_sigma_upper);
-   if(reduced_lt) RooPlot* framesig = tRed.frame(Title("Signal region"),Range("sig")) ;
-   else RooPlot* framesig = t.frame(Title("Signal region"),Range("sig")) ;
+   RooPlot* framesig = t.frame(Title("Signal region"),Range("sig")) ;
    data.plotOn(framesig, CutRange("sig")) ;
    full_model.plotOn(framesig, ProjectionRange("sig")) ;
+   full_model.plotOn(framesig, Components(signal), LineColor(kRed), ProjectionRange("sig"));
+   if(cfg.prompt_bk) full_model.plotOn(framesig, Components(prompt), LineStyle(kDashed), LineColor(kBlack), ProjectionRange("sig"));
+   if(cfg.nonprompt_bk) full_model.plotOn(framesig, Components(nonprompt), LineStyle(kDotted), LineColor(kBlack), ProjectionRange("sig"));
+   gPad->SetLeftMargin(0.12);
+   gPad->SetRightMargin(0.004);
+   framesig->GetYaxis()->SetTitleOffset(1.2);
+   framesig->GetYaxis()->SetTitleSize(0.045);
+   framesig->GetXaxis()->SetTitleSize(0.045);
    framesig->Draw();
 
    c3->cd(3);
    gPad->SetLogy();
-   mass.setRange("sb", three_sigma_upper, mass_high);
-   if(reduced_lt) RooPlot* framesb = tRed.frame(Title("Upper sideband"),Range("sb")) ;
-   else RooPlot* framesb = t.frame(Title("Upper sideband"),Range("sb")) ;
-   data.plotOn(framesb, CutRange("sb")) ;
-   full_model.plotOn(framesb, ProjectionRange("sb")) ;
-   framesb->Draw();
+   mass.setRange("sb", three_sigma_upper, cfg.mass_high);
+   RooPlot* framesbh = t.frame(Title("Upper sideband"),Range("sb")) ;
+   data.plotOn(framesbh, CutRange("sb")) ;
+   full_model.plotOn(framesbh, ProjectionRange("sb")) ;
+   full_model.plotOn(framesbh, Components(signal), LineColor(kRed), ProjectionRange("sb"));
+   if(cfg.prompt_bk) full_model.plotOn(framesbh, Components(prompt), LineStyle(kDashed), LineColor(kBlack), ProjectionRange("sb"));
+   if(cfg.nonprompt_bk) full_model.plotOn(framesbh, Components(nonprompt), LineStyle(kDotted), LineColor(kBlack), ProjectionRange("sb"));
+   gPad->SetLeftMargin(0.12);
+   gPad->SetRightMargin(0.004);
+   framesbh->GetYaxis()->SetTitleOffset(1.2);
+   framesbh->GetYaxis()->SetTitleSize(0.045);
+   framesbh->GetXaxis()->SetTitleSize(0.045);
+   framesbh->Draw();
+   if (saveAs.Length() !=0 ) c3->SaveAs(saveAs+"_sidebands.pdf");
 
-   cout << "Lifetime="<< tau.getVal()*1e12 << " +- "<<tau.getError()*1e12<<" ps"<<endl;
+   cout << "Fitresults: t: "<< tau.getVal()*1e12 << " +- "<<tau.getError()*1e12<<" ps ";
+   cout << " chisq(m): " << framex->chiSquare() << " chisq(t): " << framey->chiSquare();
+   cout << " mass: " << mass_peak.getVal() << " m_sigma1: " << m_sigma1.getVal() << " m_sigma2: " << m_sigma2.getVal() << " tau_bk: " << tau_bk.getVal();
+   cout <<  " nsig: " << n_signal.getVal()<<" npr: "<<n_prompt.getVal()<<" nnpr: "<<n_nonprompt.getVal()<<endl;
+
+   //cfg.f->Close();
+   //cfg.f->Delete();
+   //delete cfg.f;
+
+   cout << "FITRESULTS: ";
+   cout << tau.getVal()*1e12 << " " << tau.getError()*1e12 << " ";
+   cout << mass_peak.getVal() << " " << mass_peak.getError() << " ";
+   cout << m_sigma1.getVal() << " " << m_sigma1.getError() << " ";
+   cout << m_sigma2.getVal() << " " << m_sigma2.getError() << " ";
+   cout << frac_m_gauss.getVal() << " " << frac_m_gauss.getError() << " ";
+   cout << core_frac.getVal() << " " << core_frac.getError() << " ";
+   cout << tau_bk.getVal()*1e12 << " " << tau_bk.getError()*1e12 << " ";
+   cout << n_nonprompt.getVal() << " " << n_nonprompt.getError() << " ";
+   cout << n_prompt.getVal() << " " << n_prompt.getError() << " ";
+   cout << n_signal.getVal() << " " << n_signal.getError() << " ";
+   cout << prompt_p1.getVal() << " " << prompt_p1.getError() << " ";
+   cout << prompt_sigma_core.getVal() << " " << prompt_sigma_core.getError() << " ";
+   cout << prompt_sigma_tail.getVal() << " " << prompt_sigma_tail.getError() << " ";
+   cout << chi2_m << " " << chi2_t;
+   cout << endl;
+}
+
+void doSomePlots(TString filestem, TString arguments)
+{
+    vector<TString> todolist;
+    todolist.push_back(TString(""));
+    todolist.push_back(TString("_phiplus"));
+    todolist.push_back(TString("_phiminus"));
+    todolist.push_back(TString("_phiLTpihalve"));
+    todolist.push_back(TString("_phiGTpihalve"));
+    todolist.push_back(TString("_etaplus"));
+    todolist.push_back(TString("_etaminus"));
+    todolist.push_back(TString("_PVlo"));
+    todolist.push_back(TString("_PVhi"));
+    todolist.push_back(TString("_ptlo"));
+    todolist.push_back(TString("_pthi"));
+    todolist.push_back(TString("_runA"));
+    todolist.push_back(TString("_runB"));
+    todolist.push_back(TString("_cow"));
+    todolist.push_back(TString("_sea"));
+    todolist.push_back(TString("_cowA"));
+    todolist.push_back(TString("_cowB"));
+    todolist.push_back(TString("_seaA"));
+    todolist.push_back(TString("_seaB"));
+    todolist.push_back(TString("_lb"));
+    todolist.push_back(TString("_lbbar"));
+
+    for(vector<TString>::const_iterator it = todolist.begin(); it!=todolist.end(); it++)
+    {
+	cout << "Working on: " << *it << endl;
+	Fit_2D(filestem+(*it)+".root " + arguments, filestem+(*it));
+    }
+
+    return;
+    
+    //Fit_2D("../data/vrt_r548_lb_data_lb14.root");
+}
+
+void doNPlots(TString filestem, int N, TString arguments)
+{
+    for(int i=0; i!=N; i++)
+    {
+	cout << "Working on file no. " << i << endl;
+	Fit_2D(filestem+TString(toString(i))+".root " + arguments, filestem+TString(toString(i)));
+    }
+
+    return;
+
+    //Fit_2D("../data/vrt_r548_lb_data_lb14.root");
 }
 

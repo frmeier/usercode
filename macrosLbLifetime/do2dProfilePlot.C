@@ -25,8 +25,9 @@ void do2dProfilePlot(TTree *t, string hname, string todraw, string cut,
     h->GetXaxis()->SetTitle(valueWithUnit(titleX, unitX).c_str());
     h->GetXaxis()->SetNdivisions(505);
     h->GetYaxis()->SetTitle(valueWithUnit(titleY, unitY).c_str());
-    h->SetMaximum(maxY);
-    h->SetMinimum(minY);
+    const double maxscaler(.1);
+    h->SetMaximum(maxY*maxscaler);
+    h->SetMinimum(minY*maxscaler);
     return; 
 }
 

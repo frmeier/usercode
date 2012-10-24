@@ -68,9 +68,19 @@ std::string concatCutString(const std::string s1, const std::string s2, const st
 	return ret;
 }
 
+std::string makePlotsString(const int &nBins, const double &lo, const double &hi)
+{
+    return "(" + toString(nBins) + "," + toString(lo) + "," + toString(hi) + ")";
+}
+
 std::string makePlotsString(const std::string &toPlot, const std::string &hname, const int &nBins, const double &lo, const double &hi)
 {
     return toPlot + ">>" + hname + "(" + toString(nBins) + "," + toString(lo) + "," + toString(hi) + ")";
+}
+
+std::string makePlotsString(const std::string &toPlot, const std::string &hname)
+{
+    return toPlot + ">>" + hname;
 }
 
 std::vector<double> variableBinSizeVec(double v0, double v1, double v2 = -9999, double v3 = -9999, double v4 = -9999, double v5 = -9999, double v6 = -9999,

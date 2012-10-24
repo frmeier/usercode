@@ -58,7 +58,7 @@ void doStackedPlot(TTree *tree, string name, string title, string toDraw, string
 {
     THStack *hs = new THStack((name + "_stack").c_str(), title.c_str());
 
-    const float legX(0.55), legXwidth(0.40);
+    const float legX(0.75), legXwidth(0.20);
     const float legY(0.9), legYwidth1(0.05);
     TLegend *legend = new TLegend(legX,legY-legYwidth1*spl.vec.size(),legX+legXwidth,legY);
     legend->SetFillStyle(1000);
@@ -102,7 +102,7 @@ void doStackedPlot(string name, string title, string toDraw, string xtitle, stri
 {
     THStack *hs = new THStack((name + "_stack").c_str(), title.c_str());
 
-    const float legX(0.55), legXwidth(0.40);
+    const float legX(0.75), legXwidth(0.20);
     const float legY(0.9), legYwidth1(0.05);
     TLegend *legend = new TLegend(legX,legY-legYwidth1*spl.vec.size(),legX+legXwidth,legY);
     legend->SetFillStyle(1000);

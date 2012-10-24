@@ -148,7 +148,7 @@ doMassFitLb01_fitresults doMassFitLb01(TTree * tree, const double lumi, const st
 }
 
 // Unbinned likelihood fit for B0 mass using a double Gaussian
-doMassFitLb01_fitresults doMassFitLb01_DG(TTree * tree, const double lumi, const string addTitle = "", const bool noTitle = false, const bool prelim = true, const bool noStat = false, const bool drawSigmaRanges = false)
+doMassFitLb01_fitresults doMassFitLb01_DG(TTree * tree, const double lumi, const string addTitle = "", const bool noTitle = false, const bool prelim = true, const bool noStat = false, const bool drawSigmaRanges = false, const string leafname = "mbc")
 {
     doMassFitLb01_fitresults res; // container for results
 
@@ -167,7 +167,7 @@ doMassFitLb01_fitresults doMassFitLb01_DG(TTree * tree, const double lumi, const
     //const double valLo(5.35), valHi(5.90);
     //const int nBins(33);
 
-    RooRealVar mass("mbc", "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
+    RooRealVar mass(leafname.c_str(), "J/#psi #Lambda mass [GeV/c^{2}]", valLo, valHi);
     RooDataSet data("data", "B0 dataset", tree, mass);
 
     //   mass fit

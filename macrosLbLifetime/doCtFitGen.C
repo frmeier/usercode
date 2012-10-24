@@ -63,7 +63,7 @@ int doCtFitGen(TTree *tree, string title, bool isB0, double tLo = 0e-12, double 
 
     // Fit parameters
     //const double tauLb(1.391e-12), tauB0(1.525e-12);
-    const double tauLb(1.428e-12), tauB0(1.536e-12);
+    const double tauLb(1.424e-12), tauB0(1.536e-12);
     //const double tauLb(1.229e-12), tauB0(1.536e-12); // corresponds to the evt.pdl table used in production
     const double tauTruthVal = (isB0 ? tauB0 : tauLb);
     RooRealVar tau("tau","tau", tauTruthVal, 0e-12, (tHi < 2*tauTruthVal ? 2*tauTruthVal : tHi));
@@ -101,10 +101,12 @@ int doCtFitGen(TTree *tree, string title, bool isB0, double tLo = 0e-12, double 
     frame_t->addObject(writeTLatex("#tau: " + roundToString(tau.getVal()*1e12, 3) + " #pm " + roundToString(tau.getError()*1e12, 3) + " ps", txtPosLeft, txtPosTop-0*txtLineSpace, textsize));
     frame_t->addObject(writeTLatex("n Signal: " + roundToString(nsig.getVal(), 0) + " #pm " + roundToString(nsig.getError(), 0), txtPosLeft, txtPosTop-1*txtLineSpace, textsize));
     frame_t->addObject(writeTLatex("(errors statistical only)", txtPosLeft, txtPosTop-2*txtLineSpace, textsize));
+    cout << "Result: " << roundToString(tau.getVal()*1e12, 3) << " +/- " << roundToString(tau.getError()*1e12, 3) << " ps  N: " << roundToString(nsig.getVal(), 0) << endl;
 
     gStyle->SetTitleColor(0);
 
     // draw the plots
+    //TCanvas *canvas = new TCanvas("fitres","fit results",1600,800);
     TCanvas *canvas = new TCanvas("fitres","fit results",800,800);
     canvas->Divide(1,1);
     canvas->cd(1);
@@ -171,6 +173,10 @@ int doCtFitGen(string filename, string title, bool isB0, double tLo = 0e-12, dou
 	return -2;
     }
     return doCtFitGen(tree, title, isB0, tLo, tHi);
+    tree->Delete();
+    delete tree;
+    f->Delete();
+    delete f;
 }
 
 // Variante mit Cut
@@ -257,6 +263,32 @@ int doSomeCtFitPlots(string run)
     return 0;
 }
 
+void doCtFitGenCutSequenceB0_bins(double ptpp)
+{
+    const string filename = "../data/run460_472.root";
+    setUseEventsTree(true);
+
+    Cuts cutB0;
+    cutB0.selectCut("B006", "acc06B0", "muSoft", "HLT_jpsiBarrel", "HLT_matched");
+    cutB0.removeOneCut("rptha1");
+    cutB0.removeOneCut("rptha2");
+    const string anaAll = "isMCmatch==1&&isSig==1";
+    const string anaPass = anaAll+"&&"+cutB0.getCut();
+
+	    //doCtFitGen(filename, anaAll+"&&TMath::Abs(retamu1)<1.25&&TMath::Abs(retamu2)<1.25&&TMath::Abs(retaha1)<1.25&&TMath::Abs(retaha2)<1.25", "B^{0} reco all matched sig, |#eta_{i}|<2.5", true, 0e-12, 16e-12);
+	    //return;
+    int i = 0;
+//    for (double ptpp = 0.9; ptpp <= 2.5; ptpp+=.1)
+	for (double ptpm = 0.5; ptpm <= 2.5; ptpm+=.1)
+	{
+	    const string addCut = "&&(rqha1>0?rptha1:rptha2)>" + toString(ptpp) + "&&(rqha1<0?rptha1:rptha2)>" + toString(ptpm);
+	    cout << "addCut: " << addCut << endl;
+	    cout << "ptcut: pi+: " << ptpp << " pt-: " << ptpm << endl;
+	    doCtFitGen(filename, anaPass+addCut, "B^{0} reco all matched sig, p_{T}(#pi^{+})>"+toString(ptpp)+" p_{T}(#pi^{-})>"+toString(ptpm), true, 0e-12, 16e-12);
+	    gPad->SaveAs(("doCtFitGen_B0_ptbins" + toString(i) +".pdf").c_str());
+	}
+}
+
 void doCtFitGenCutSequenceB0(const string filename)
 {
     //TCanvas *c = new TCanvas("c", "c", 400, 400);
@@ -272,16 +304,58 @@ void doCtFitGenCutSequenceB0(const string filename)
     doCtFitGen(filename, "", "B^{0} all", true, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_00_all.pdf").c_str());
 
-    doCtFitGen(filename, "hasCand>0", "B^{0} cand", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_00_cand.pdf").c_str());
+    //doCtFitGen(filename, "hasCand>0", "B^{0} cand", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_cand.pdf").c_str());
+
+    /*
+    doCtFitGen(filename, "vrrs>2", "B^{0} cand vrrs>2", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candeffstep2.pdf").c_str());
+
+    doCtFitGen(filename, "vrrs>2&&(vrrs>6?getrn()<.3:1)>0", "B^{0} cand effstep vrrs>2", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candeffstep3.pdf").c_str());
+
+    doCtFitGen(filename, "(vrrs>6?getrn()<.3:1)>0", "B^{0} cand effstep", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candeffstep4.pdf").c_str());
+    */
+
+    //doCtFitGen(filename, "getProb(vrrs)<getrn()", "B^{0} cand effenvelope", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candeffenvelope.pdf").c_str());
+
+    //doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3", "B^{0} simple acc", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candacc.pdf").c_str());
+
+    //doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(vrrs>6?getrn()<.3:1)>0", "B^{0} simple acc effstep", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candacceffstep.pdf").c_str());
+
+    //doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(vrrs>6?getrn()<.1:1)>0", "B^{0} simple acc effstep .1", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candacceffstep2.pdf").c_str());
+
+    //doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&getProb(vrrs)<getrn()", "B^{0} simple acc effenvel", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candacceffenvel.pdf").c_str());
+
+    /*
+    doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(ptha1>ptha2?ptha1:ptha2)>1.8&&(ptha1<ptha2?ptha1:ptha2)>0.5&&TMath::Abs(etaha1)<1.3&&TMath::Abs(etaha2)<1.3", "B^{0} acc hacut", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candaccha.pdf").c_str());
+
+    doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(ptha1>ptha2?ptha1:ptha2)>1.8&&(ptha1<ptha2?ptha1:ptha2)>0.5&&TMath::Abs(etaha1)<1.3&&TMath::Abs(etaha2)<1.3&&(vrrs>6?getrn()<.3:1)>0", "B^{0} acc hacut effstep .3", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candacchastep1.pdf").c_str());
+
+    doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(ptha1>ptha2?ptha1:ptha2)>1.8&&(ptha1<ptha2?ptha1:ptha2)>0.5&&TMath::Abs(etaha1)<1.3&&TMath::Abs(etaha2)<1.3&&(vrrs>6?getrn()<.1:1)>0", "B^{0} acc hacut effstep .1", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candacchastep2.pdf").c_str());
+
+    doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(ptha1>ptha2?ptha1:ptha2)>1.8&&(ptha1<ptha2?ptha1:ptha2)>0.5&&TMath::Abs(etaha1)<1.3&&TMath::Abs(etaha2)<1.3&&getProb(vrrs)<getrn()", "B^{0} acc hacut effenvel", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candacchaenvel.pdf").c_str());
+    */
+
+    //doCtFitGen(filename, "ptmu1>3&&ptmu2>3&&TMath::Abs(etamu1)<1.3&&TMath::Abs(etamu2)<1.3&&(ptha1>ptha2?ptha1:ptha2)>1.8&&(ptha1<ptha2?ptha1:ptha2)>0.5&&TMath::Abs(etaha1)<1.3&&TMath::Abs(etaha2)<1.3&&getProbZ(vzrs)<getrn()", "B^{0} acc hacut effenvelz", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candacchaenvelz.pdf").c_str());
+
 
     doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1", "B^{0} cand match", true, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_00_candmatch.pdf").c_str());
 
-    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==0", "B^{0} cand NOmatch", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_00_candnotmatch.pdf").c_str());
-
-    return;
+    //doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==0", "B^{0} cand NOmatch", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candnotmatch.pdf").c_str());
 
     /*
     // ------------------------------------------------------------------------- step 1: acceptance
@@ -337,9 +411,7 @@ void doCtFitGenCutSequenceB0(const string filename)
 
     doCtFitGen(filename, trigPassAll, "B^{0} + barrel trigger", true, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_04_muKsAccTrg.pdf").c_str());
-    */
 
-    /*
     // ------------------------------------------------------------------------- step 6: Triggermatching
     const string hltMatchAll = lbCandAll + "&&" + lbCandPass;
     const string hltMatchPass = "HLTmatch==1";
@@ -357,37 +429,46 @@ void doCtFitGenCutSequenceB0(const string filename)
     setUseEventsTree(true);
 
     Cuts cutB0;
-    cutB0.selectCut("B004", "acc05B0", "muSoft");
-    const string anaAll = "HLTokBarrelJpsi==1&&HLTmatch";
+    cutB0.selectCut("B008", "acc06B0", "muSoft");
+    const string anaAll = "isMCmatch==1&&isSig==1";
     const string anaPass = anaAll+"&&"+cutB0.getCut();
+    const string anaPassBarrel = anaPass+"&&"+"HLTmatch==1&&HLTokBarrelJpsi==1";
+    const string anaPassDispl = anaPass+"&&"+"HLTmatch==1&&HLTokDisplJpsi==1";
 
-    doCtFitGen(filename, "", "B^{0} reco all", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_09_recoAll.pdf").c_str());
+    //doCtFitGen(filename, "", "B^{0} reco all", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_09_recoAll.pdf").c_str());
 
-    doCtFitGen(filename, "isMCmatch==1", "B^{0} reco all matched", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_09_recoAllMatch.pdf").c_str());
+    /*
+    for (int i=0; i!=5; i++)
+    {
+	doCtFitGen(filename, "vrrs>"+toString(i), "B^{0} reco all, vrrs>"+toString(i), true, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_09_recoAll_rvrrs_"+toString(i)+".pdf").c_str());
+    }
+    */
 
-    doCtFitGen(filename, "isMCmatch==1&&isSig==1", "B^{0} reco all matched sig", true, 0e-12, 16e-12);
+    //doCtFitGen(filename, "isMCmatch==1", "B^{0} reco all matched", true, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_09_recoAllMatch.pdf").c_str());
+
+    /*
+    doCtFitGen(filename, anaAll, "B^{0} reco all matched sig", true, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_09_recoAllMatchSig.pdf").c_str());
 
+    */
 
-    doCtFitGen(filename, anaAll, "B^{0} reco HLT", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_10_recoHLT.pdf").c_str());
+    doCtFitGen(filename, anaPass, "B^{0} analysis cuts", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut.pdf").c_str());
 
-    doCtFitGen(filename, anaPass, "B^{0} reco HLT anaCut", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_11_recoHLTAnaCut.pdf").c_str());
+    doCtFitGen(filename, anaPassBarrel, "B^{0} analysis cuts, barrel trigger", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel.pdf").c_str());
 
-    doCtFitGen(filename, anaPass+"&&isMCmatch==1", "B^{0} reco HLT anaCut match", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCutMatch.pdf").c_str());
+    for (int i=0; i!=5; i++)
+    {
+	doCtFitGen(filename, anaPassBarrel+"&&vrrs>"+toString(i), "B^{0} analysis cuts, barrel trigger, vrrs>"+toString(i), true, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_10_nacutBarrel_rvrrs_"+toString(i)+".pdf").c_str());
+    }
 
-    doCtFitGen(filename, anaPass+"&&isMCmatch==1&&isSig==1", "B^{0} reco HLT anaCut match sig", true, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCutMatchSig.pdf").c_str());
-
-    //doCtFitGen(filename, anaPass+"&&rpt1m>3&&rpt2m>3", "B^{0} reco HLT anaCut + ptmu>3", true, 0e-12, 16e-12);
-    //gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCut.pdf").c_str());
-
-    //doCtFitGen(filename, anaPass+"&&(PvLip2==9999||PvLip2/PvLipE2>4)", "B^{0} reco HLT anaCut + 2ndPVSign>4", true, 0e-12, 16e-12);
-    //gPad->SaveAs((pdfFilebase + "_13_recoHLTAnaCut.pdf").c_str());
+    doCtFitGen(filename, anaPassDispl, "B^{0} analysis cuts, displaced trigger", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutDispl.pdf").c_str());
 
 
     /*
@@ -408,6 +489,45 @@ void doCtFitGenCutSequenceB0(const string filename)
     */
 }
 
+void doCtFitGenCutSequenceB0Final(const string filename)
+{
+    //TCanvas *c = new TCanvas("c", "c", 400, 400);
+    //const string filename = "../data/run365.root";
+    //const string filename = "../data/run337.root";
+    //TFile *f = TFile::Open("../data/run337.root");
+    //TTree *genevents = (TTree*)f->Get("genevents");
+    //TTree *events = (TTree*)f->Get("events");
+    const string pdfFilebase = "doCtFitGenCutSequenceB0";
+
+    // ------------------------------------------------------------------------- step 0: all
+    setUseEventsTree(false);
+    doCtFitGen(filename, "", "B^{0} all", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_all.pdf").c_str());
+
+    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1", "B^{0} cand match", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candmatch.pdf").c_str());
+
+    // =====================================================================================================
+    // ------------------------------------------------------------------------- step 7: analysis cuts
+    setUseEventsTree(true);
+
+    Cuts cutB0;
+    cutB0.selectCut("B008", "acc06B0", "muSoft");
+    const string anaAll = "isMCmatch==1&&isSig==1";
+    const string anaPass = anaAll+"&&"+cutB0.getCut();
+    const string anaPassBarrel = anaPass+"&&"+"HLTmatch==1&&HLTokBarrelJpsi==1";
+    const string anaPassDispl = anaPass+"&&"+"HLTmatch==1&&HLTokDisplJpsi==1";
+
+    doCtFitGen(filename, anaPass, "B^{0} analysis cuts", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut.pdf").c_str());
+
+    doCtFitGen(filename, anaPassBarrel, "B^{0} analysis cuts, barrel trigger", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel.pdf").c_str());
+
+    doCtFitGen(filename, anaPassDispl, "B^{0} analysis cuts, displaced trigger", true, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutDispl.pdf").c_str());
+}
+
 void doCtFitGenCutSequenceLb(const string filename)
 {
     //TCanvas *c = new TCanvas("c", "c", 400, 400);
@@ -423,17 +543,16 @@ void doCtFitGenCutSequenceLb(const string filename)
     doCtFitGen(filename, "", "#Lambda_{b} all", false, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_00_all.pdf").c_str());
 
-    doCtFitGen(filename, "hasCand>0", "#Lambda_{b} cand", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_00_cand.pdf").c_str());
+    //doCtFitGen(filename, "hasCand>0", "#Lambda_{b} cand", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_cand.pdf").c_str());
 
     doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1", "#Lambda_{b} cand match", false, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_00_candmatch.pdf").c_str());
 
-    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==0", "#Lambda_{b} cand NOmatch", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_00_candnotmatch.pdf").c_str());
+    //doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==0", "#Lambda_{b} cand NOmatch", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_00_candnotmatch.pdf").c_str());
 
-    return;
-
+    /*
     // ------------------------------------------------------------------------- step 1: acceptance
     // Muon acceptance
     const string acc_mu1_1 = "TMath::Abs(etamu1)<1.2&&ptmu1>3.5";
@@ -488,7 +607,6 @@ void doCtFitGenCutSequenceLb(const string filename)
     doCtFitGen(filename, trigPassAll, "#Lambda_{b} + barrel trigger", false, 0e-12, 16e-12);
     gPad->SaveAs((pdfFilebase + "_04_muL0AccTrg.pdf").c_str());
 
-    /*
     // ------------------------------------------------------------------------- step 6: Triggermatching
     const string hltMatchAll = lbCandAll + "&&" + lbCandPass;
     const string hltMatchPass = "HLTmatch==1";
@@ -505,22 +623,193 @@ void doCtFitGenCutSequenceLb(const string filename)
     // ------------------------------------------------------------------------- step 7: analysis cuts
     setUseEventsTree(true);
 
-    Cuts cutB0;
-    cutB0.selectCut("lb11", "acc05Lb", "muSoft");
-    const string anaAll = "HLTokBarrelJpsi==1&&HLTmatch";
-    const string anaPass = anaAll+"&&"+cutB0.getCut();
+    Cuts cutLb;
+    cutLb.selectCut("lb12", "acc06Lb", "muSoft");
+    const string anaAll = "isMCmatch==1&&isSig==1";
+    const string anaPass = anaAll+"&&"+cutLb.getCut();
+    const string anaPassBarrel = anaPass+"&&"+"HLTmatch==1&&HLTokBarrelJpsi==1";
+    const string anaPassDispl = anaPass+"&&"+"HLTmatch==1&&HLTokDisplJpsi==1";
 
-    doCtFitGen(filename, "", "#Lambda_{b} reco all", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_09_recoAll.pdf").c_str());
+    /*
+    for (int i=0; i!=5; i++)
+    {
+	doCtFitGen(filename, "vrrs>"+toString(i), "#Lambda_{b}+#bar{#Lambda}_{b} reco all, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_09_recoAll_rvrrs_"+toString(i)+".pdf").c_str());
 
-    doCtFitGen(filename, anaAll, "#Lambda_{b} reco HLT", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_10_recoHLT.pdf").c_str());
+	doCtFitGen(filename, "rqha1>0&&vrrs>"+toString(i), "#Lambda_{b} reco all, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_09_recoAll_Lb_rvrrs_"+toString(i)+".pdf").c_str());
 
-    doCtFitGen(filename, anaPass, "#Lambda_{b} reco HLT anaCut", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_11_recoHLTAnaCut.pdf").c_str());
+	doCtFitGen(filename, "rqha1<0&&vrrs>"+toString(i), "#bar{#Lambda}_{b} reco all, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_09_recoAll_Lbbar_rvrrs_"+toString(i)+".pdf").c_str());
+    }
+    */
 
-    doCtFitGen(filename, anaPass+"&&isMCmatch==1", "#Lambda_{b} reco HLT anaCut match", false, 0e-12, 16e-12);
-    gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCutMatch.pdf").c_str());
+    /*
+    // Study with increasing cut on vrrs
+    for (int i=0; i!=5; i++)
+    {
+	doCtFitGen(filename, anaPassBarrel+"&&vrrs>"+toString(i), "#Lambda_{b}+#bar{#Lambda}_{b} reco cuts, barrel trigger, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_10_anacutBarrel_rvrrs_"+toString(i)+".pdf").c_str());
+
+	doCtFitGen(filename, anaPassBarrel+"&&rqha1>0&&vrrs>"+toString(i), "#Lambda_{b} reco cuts, barrel trigger, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_10_anacutBarrel_Lb_rvrrs_"+toString(i)+".pdf").c_str());
+
+	doCtFitGen(filename, anaPassBarrel+"&&rqha1<0&&vrrs>"+toString(i), "#bar{#Lambda}_{b} reco cuts, barrel trigger, vrrs>"+toString(i), false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_10_anacutBarrel_Lbbar_rvrrs_"+toString(i)+".pdf").c_str());
+    }
+    */
+
+    doCtFitGen(filename, "rqha1<0", "#bar{#Lambda}_{b} reco", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_0.pdf").c_str());
+
+    /*
+    doCtFitGen(filename, anaAll+"&&rqha1<0", "#bar{#Lambda}_{b} reco, mcmatch, sig", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_27.pdf").c_str());
+
+    doCtFitGen(filename, anaPass+"&&rqha1<0", "#bar{#Lambda}_{b} reco, mcmatch, sig, anacut", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_28.pdf").c_str());
+
+    doCtFitGen(filename, anaPass+"&&rqha1<0", "#bar{#Lambda}_{b} reco, mcmatch, sig, acc", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_29.pdf").c_str());
+
+    doCtFitGen(filename, anaPass+"&&rqha1<0", "#bar{#Lambda}_{b} reco, mcmatch, sig, softMu", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_30.pdf").c_str());
+    */
+
+    doCtFitGen(filename, anaPass+"&&rqha1<0", "#bar{#Lambda}_{b} reco, anacut ohne trg", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_31.pdf").c_str());
+
+    std::vector<string> cutlist;
+    cutlist.push_back("rptmu1");
+    cutlist.push_back("rptmu2");
+    cutlist.push_back("mrs");
+    cutlist.push_back("Kshypo");
+    cutlist.push_back("rptha1");
+    cutlist.push_back("rptha2");
+    cutlist.push_back("probrs");
+    cutlist.push_back("alphars");
+    cutlist.push_back("d3rs");
+    cutlist.push_back("d3rs/d3Ers");
+    cutlist.push_back("vrrs");
+
+    int counter = 0;
+    for (std::vector<string>::const_iterator it = cutlist.begin(); it!=cutlist.end(); it++)
+    {
+	Cuts cut;
+	cut.selectCut("lb13", "acc06Lb", "muSoft");
+	cut.removeOneCut(*it);
+	doCtFitGen(filename, cut.getCut()+"&&rqha1<0", "#bar{#Lambda}_{b} reco, acc, soft, anacut ohne "+*it, false, 0e-12, 16e-12);
+	gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_Remove"+toString(counter)+".pdf").c_str());
+	counter++;
+    }
+
+    //doCtFitGen(filename, anaPassBarrel+"&&rqha1<0", "#bar{#Lambda}_{b} reco, anacut mit trg", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_32.pdf").c_str());
+
+    /*
+       // Studien für Bias durch Cuts
+    doCtFitGen(filename, "rqha1<0&&HLTokBarrelJpsi==1", "#bar{#Lambda}_{b} reco, barrel", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_1.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&HLTokBarrelJpsi==1&&HLTmatch==1", "#bar{#Lambda}_{b} reco, barrel match", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_2.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&rptmu1>3", "#bar{#Lambda}_{b} reco, , rptmu1>3", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_3.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&rptmu2>3", "#bar{#Lambda}_{b} reco, , rptmu2>3", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_4.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&mrs>1.110683&&mrs<1.120683", "#bar{#Lambda}_{b} reco, ", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_5.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&(Kshypo<0.485614||Kshypo>0.509614)", "#bar{#Lambda}_{b} reco, ", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_6.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&rptha1>1.8", "#bar{#Lambda}_{b} reco, rptha1>1.8", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_7.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&rptha2>.5", "#bar{#Lambda}_{b} reco, rptha2>.5", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_8.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&probrs>.15", "#bar{#Lambda}_{b} reco, probrs>.15", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_9.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&alphars<.012", "#bar{#Lambda}_{b} reco, alphars<.012", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_10.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&d3rs>3", "#bar{#Lambda}_{b} reco, d3rs>3", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_11.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&d3rs/d3Ers>15", "#bar{#Lambda}_{b} reco, d3rs/d3Ers>15", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_12.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&vrrs>3", "#bar{#Lambda}_{b} reco, vrrs>3", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_13.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&TMath::Abs(etajp)<1.25", "#bar{#Lambda}_{b} reco, |etajp|<1.25", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_14.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>6.5", "#bar{#Lambda}_{b} reco, ptjp>6.5", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_15.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>10", "#bar{#Lambda}_{b} reco, ptjp>10", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_16.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>13", "#bar{#Lambda}_{b} reco, ptjp>13", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_17.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>15", "#bar{#Lambda}_{b} reco, ptjp>15", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_18.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>6.5&&TMath::Abs(etajp)<1.25", "#bar{#Lambda}_{b} reco, ptjp>6.5 + |etajp|<1.25", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_19.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>10&&TMath::Abs(etajp)<1.25", "#bar{#Lambda}_{b} reco, ptjp>10 + |etajp|<1.25", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_20.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>13&&TMath::Abs(etajp)<1.25", "#bar{#Lambda}_{b} reco, ptjp>13 + |etajp|<1.25", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_21.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&isCowboy==1", "#bar{#Lambda}_{b} reco, cowboy", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_22.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&isCowboy==0", "#bar{#Lambda}_{b} reco, seagull", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_23.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&maxdocajp<.5", "#bar{#Lambda}_{b} reco, maxdocajp<.5", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_24.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>10&&TMath::Abs(etajp)<1.25&&isCowboy==0", "#bar{#Lambda}_{b} reco, pt>10, eta<1.25, seagull", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_25.pdf").c_str());
+
+    doCtFitGen(filename, "rqha1<0&&ptjp>13&&TMath::Abs(etajp)<1.25&&isCowboy==0", "#bar{#Lambda}_{b} reco, pt>13, eta<1.25, seagull", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_20_anacutTest_Lbbar_26.pdf").c_str());
+    */
+
+
+    //doCtFitGen(filename, "", "#Lambda_{b} reco all", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_09_recoAll.pdf").c_str());
+
+    /*
+    doCtFitGen(filename, anaAll, "#Lambda_{b} reco all matched sig", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_09_recoAllMatchSig.pdf").c_str());
+
+    */
+    doCtFitGen(filename, anaPass, "#Lambda_{b} analysis cuts", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut.pdf").c_str());
+
+    doCtFitGen(filename, anaPassBarrel, "#Lambda_{b} analysis cuts, barrel trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel.pdf").c_str());
+
+    doCtFitGen(filename, anaPassDispl, "#Lambda_{b} analysis cuts, displaced trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutDispl.pdf").c_str());
+
+    //doCtFitGen(filename, anaPass, "#Lambda_{b} reco HLT anaCut", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_11_recoHLTAnaCut.pdf").c_str());
+
+    //doCtFitGen(filename, anaPass, "#Lambda_{b} reco HLT anaCut match", false, 0e-12, 16e-12);
+    //gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCutMatch.pdf").c_str());
 
     //doCtFitGen(filename, anaPass+"&&rpt1m>3&&rpt2m>3", "#Lambda_{b} reco HLT anaCut + ptmu>3", false, 0e-12, 16e-12);
     //gPad->SaveAs((pdfFilebase + "_12_recoHLTAnaCut.pdf").c_str());
@@ -546,3 +835,68 @@ void doCtFitGenCutSequenceLb(const string filename)
 	 << " cat output B0effplots.pdf" << endl;
     */
 }
+
+void doCtFitGenCutSequenceLbFinal(const string filename)
+{
+    //TCanvas *c = new TCanvas("c", "c", 400, 400);
+    //const string filename = "../data/run365.root";
+    //const string filename = "../data/run337.root";
+    //TFile *f = TFile::Open("../data/run337.root");
+    //TTree *genevents = (TTree*)f->Get("genevents");
+    //TTree *events = (TTree*)f->Get("events");
+    const string pdfFilebase = "doCtFitGenCutSequenceLb";
+
+    // ------------------------------------------------------------------------- step 0: all
+    setUseEventsTree(false);
+    doCtFitGen(filename, "", "#Lambda_{b} all", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_all.pdf").c_str());
+
+    doCtFitGen(filename, "qha1>0", "#Lambda_{b} only", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_all_lb.pdf").c_str());
+
+    doCtFitGen(filename, "qha1<0", "#bar{#Lambda}_{b} only", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_all_lbbar.pdf").c_str());
+
+    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1", "#Lambda_{b} cand match", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candmatch.pdf").c_str());
+
+    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1&&qha1>0", "#Lambda_{b} only cand match", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candmatch_lb.pdf").c_str());
+
+    doCtFitGen(filename, "hasCand>0&&(isMCmatch&1)==1&&qha1<0", "#bar{#Lambda}_{b} only cand match", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_00_candmatch_lbbar.pdf").c_str());
+
+    // =====================================================================================================
+    // ------------------------------------------------------------------------- step 7: analysis cuts
+    setUseEventsTree(true);
+
+    Cuts cutLb;
+    cutLb.selectCut("lb14", "acc06Lb", "muSoft");
+    const string anaAll = "isMCmatch==1&&isSig==1";
+    const string anaPass = anaAll+"&&"+cutLb.getCut();
+    const string anaPassBarrel = anaPass+"&&"+"HLTmatch==1&&HLTokBarrelJpsi==1";
+    const string anaPassDispl = anaPass+"&&"+"HLTmatch==1&&HLTokDisplJpsi==1";
+
+    doCtFitGen(filename, anaPass, "#Lambda_{b} analysis cuts", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut.pdf").c_str());
+
+    doCtFitGen(filename, anaPass+"&&rqha1>0", "#Lambda_{b} only analysis cuts", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut_lb.pdf").c_str());
+
+    doCtFitGen(filename, anaPass+"&&rqha1<0", "#bar{#Lambda}_{b} only analysis cuts", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacut_lbbar.pdf").c_str());
+
+    doCtFitGen(filename, anaPassBarrel, "#Lambda_{b} analysis cuts, barrel trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel.pdf").c_str());
+
+    doCtFitGen(filename, anaPassBarrel+"&&rqha1>0", "#Lambda_{b} only analysis cuts, barrel trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel_lb.pdf").c_str());
+
+    doCtFitGen(filename, anaPassBarrel+"&&rqha1<0", "#bar{#Lambda}_{b} only analysis cuts, barrel trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutBarrel_lbbar.pdf").c_str());
+
+    doCtFitGen(filename, anaPassDispl, "#Lambda_{b} analysis cuts, displaced trigger", false, 0e-12, 16e-12);
+    gPad->SaveAs((pdfFilebase + "_10_anacutDispl.pdf").c_str());
+
+}
+

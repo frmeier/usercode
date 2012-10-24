@@ -54,6 +54,10 @@ class Cuts
 	{
 	    return cs.getCutExceptOne(parvec, cs.getCutPos(name));
 	};
+	cutBase::cutnameType getCutChangeOne(cutBase::cutnameType name, cutBase::valueType v)
+	{
+	    return getCutExceptOne(name) + "&&" + getOneCut(name, v);
+	};
 
 	void printCut()
 	{
@@ -110,6 +114,10 @@ class Cuts
 	void selectCutLb120417();
 	void selectCutLb120420();
 	void selectCutLb120523();
+	void selectCutLb120711();
+	void selectCutLb120713();
+	void selectCutLb120905();
+	void selectCutLb120610();
 	void selectCut110203exp();
 	void selectCut110203exp2();
 	void selectCut110222exp();
@@ -120,6 +128,8 @@ class Cuts
 	void selectCutB0_120416();
 	void selectCutB0_120420();
 	void selectCutB0_120523();
+	void selectCutB0_120711();
+	void selectCutB0_120905();
 	void selectCutAcceptance110120();
 	void selectCutAcceptance110131();
 	void selectCutAcceptance110210();
@@ -142,6 +152,8 @@ class Cuts
 	void selectCutTrgJpsi();
 	void selectCutTrgJpsiDispl();
 	void selectCutTrgJpsiBarrel();
+	void selectCutTrgJpsiDisplMCPseudo();
+	void selectCutTrgJpsiBarrelMCPseudo();
 	void selectCutMlbWindow_110215();
 	void selectCutIso120229();
 	void selectCutPtLb_10_15();

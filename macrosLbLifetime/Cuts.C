@@ -25,6 +25,10 @@ void Cuts::select1Cut(std::string name)
     if (name == "lb10") { selectCutLb120417(); return; }
     if (name == "lb11") { selectCutLb120420(); return; }
     if (name == "lb12") { selectCutLb120523(); return; }
+    if (name == "lb12exp") { selectCutLb120610(); return; }
+    if (name == "lb13") { selectCutLb120711(); return; }
+    if (name == "lb13exp") { selectCutLb120713(); return; }
+    if (name == "lb14") { selectCutLb120905(); return; }
     // analysis cuts for B0
     if (name == "B001") { selectCutB0_110628(); return; }
     if (name == "B001exp") { selectCutB0_110628exp(); return; }
@@ -33,6 +37,8 @@ void Cuts::select1Cut(std::string name)
     if (name == "B004") { selectCutB0_120416(); return; }
     if (name == "B005") { selectCutB0_120420(); return; }
     if (name == "B006") { selectCutB0_120523(); return; }
+    if (name == "B007") { selectCutB0_120711(); return; }
+    if (name == "B008") { selectCutB0_120905(); return; }
     // acceptance cuts
     if (name == "acc01") { selectCutAcceptance110120(); cout << "WARNING! Cut acc01 is deprecated. Use acc03 instead." << endl; return; }
     if (name == "acc02") { selectCutAcceptance110131(); cout << "WARNING! Cut acc02 is deprecated." << endl; return; }
@@ -69,6 +75,8 @@ void Cuts::select1Cut(std::string name)
     if (name == "HLT_jpsi") { selectCutTrgJpsi(); return; }
     if (name == "HLT_jpsiDispl") { selectCutTrgJpsiDispl(); return; }
     if (name == "HLT_jpsiBarrel") { selectCutTrgJpsiBarrel(); return; }
+    if (name == "HLT_jpsiDisplMCPseudo") { selectCutTrgJpsiDisplMCPseudo(); return; }
+    if (name == "HLT_jpsiBarrelMCPseudo") { selectCutTrgJpsiBarrelMCPseudo(); return; }
     // special purpose cuts
     if (name == "mlbWindow01") { selectCutMlbWindow_110215(); return; }
     if (name == "iso01") { selectCutIso120229(); return; }
@@ -456,6 +464,84 @@ void Cuts::selectCutLb120523()
     cs.addCut(new cutBoundLower("d3rs/d3Ers"));  parvec.push_back(15);
 }
 
+void Cuts::selectCutLb120711()
+{
+    // Cuts after presentation of 18.7.12. See Journal 14 p123ff
+    cs.addCut(new cutConst("anatype==1")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // l0
+    cs.addCut(new cutSymWindow("mrs",1.115683)); parvec.push_back(0.0050);
+    cs.addCut(new cutSymWindowVeto("Kshypo",0.497614));   parvec.push_back(0.012);
+    cs.addCut(new cutGT2Var("rptha1","rptha2")); parvec.push_back(0);
+    cs.addCut(new cutBoundLower("rptha1"));      parvec.push_back(1.8);
+    cs.addCut(new cutBoundLower("rptha2"));      parvec.push_back(0.50);
+    cs.addCut(new cutBoundLower("probrs"));      parvec.push_back(0.15);
+    cs.addCut(new cutBoundUpper("alphars"));     parvec.push_back(0.012);
+    cs.addCut(new cutBoundLower("d3rs"));        parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("d3rs/d3Ers"));  parvec.push_back(15);
+    cs.addCut(new cutBoundLower("vrrs"));        parvec.push_back(3);
+}
+
+void Cuts::selectCutLb120713()
+{
+    // cuts with much lower thresholds, used for presentation of 18.7.12. See Journal 14 p123ff
+    cs.addCut(new cutConst("anatype==1")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // l0
+    cs.addCut(new cutSymWindow("mrs",1.115683)); parvec.push_back(0.0060);
+    cs.addCut(new cutSymWindowVeto("Kshypo",0.497614));   parvec.push_back(0.010);
+    cs.addCut(new cutGT2Var("rptha1","rptha2")); parvec.push_back(0);
+    cs.addCut(new cutBoundLower("rptha1"));      parvec.push_back(1.8);
+    cs.addCut(new cutBoundLower("rptha2"));      parvec.push_back(0.46);
+    cs.addCut(new cutBoundLower("probrs"));      parvec.push_back(0.10);
+    cs.addCut(new cutBoundUpper("alphars"));     parvec.push_back(0.015);
+    cs.addCut(new cutBoundLower("d3rs/d3Ers"));  parvec.push_back(10);
+    cs.addCut(new cutBoundLower("vrrs"));        parvec.push_back(3);
+}
+
+void Cuts::selectCutLb120905()
+{
+    // Same as selectCutLb120713 but advanced to a cut without "exp" in its selector name
+    cs.addCut(new cutConst("anatype==1")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // l0
+    cs.addCut(new cutSymWindow("mrs",1.115683)); parvec.push_back(0.0060);
+    cs.addCut(new cutSymWindowVeto("Kshypo",0.497614));   parvec.push_back(0.010);
+    cs.addCut(new cutGT2Var("rptha1","rptha2")); parvec.push_back(0);
+    cs.addCut(new cutBoundLower("rptha1"));      parvec.push_back(1.8);
+    cs.addCut(new cutBoundLower("rptha2"));      parvec.push_back(0.46);
+    cs.addCut(new cutBoundLower("probrs"));      parvec.push_back(0.10);
+    cs.addCut(new cutBoundUpper("alphars"));     parvec.push_back(0.015);
+    cs.addCut(new cutBoundLower("d3rs/d3Ers"));  parvec.push_back(10);
+    cs.addCut(new cutBoundLower("vrrs"));        parvec.push_back(3);
+}
+
+
+void Cuts::selectCutLb120610()
+{
+    // Cuts defined after optimization. See Journal 13 p179ff
+    cs.addCut(new cutConst("anatype==1")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    //cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    //cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // l0
+    cs.addCut(new cutSymWindow("mrs",1.115683)); parvec.push_back(0.0050);
+    cs.addCut(new cutSymWindowVeto("Kshypo",0.497614));   parvec.push_back(0.012);
+    cs.addCut(new cutGT2Var("rptha1","rptha2")); parvec.push_back(0);
+    //cs.addCut(new cutBoundLower("rptha1"));      parvec.push_back(1.8);
+    //cs.addCut(new cutBoundLower("rptha2"));      parvec.push_back(0.50);
+    cs.addCut(new cutBoundLower("probrs"));      parvec.push_back(0.05);
+    //cs.addCut(new cutBoundUpper("alphars"));     parvec.push_back(0.012);
+//    cs.addCut(new cutBoundLower("d3rs"));        parvec.push_back(1.0);
+//    cs.addCut(new cutBoundLower("d3rs/d3Ers"));  parvec.push_back(5);
+}
+
 void Cuts::selectCut110203exp()
 {
     // jp
@@ -677,6 +763,43 @@ void Cuts::selectCutB0_120523()
     cs.addCut(new cutBoundLower("d3rs/d3Ers")); parvec.push_back(15);
 }
 
+void Cuts::selectCutB0_120711()
+{
+    // Cuts after presentation of 18.7.12. See Journal 14 p123ff
+    cs.addCut(new cutConst("anatype==2")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // Ks
+    cs.addCut(new cutSymWindow("mrs",0.497614));   parvec.push_back(0.012);
+    cs.addCut(new cutSymWindowVeto("L0hypo",1.115683));   parvec.push_back(0.010);
+    cs.addCut(new cutBoundLower("rptha1"));     parvec.push_back(1.8);
+    cs.addCut(new cutBoundLower("rptha2"));     parvec.push_back(0.50);
+    cs.addCut(new cutBoundLower("probrs"));     parvec.push_back(0.15);
+    cs.addCut(new cutBoundUpper("alphars"));    parvec.push_back(0.012);
+    cs.addCut(new cutBoundLower("d3rs"));       parvec.push_back(1.0);
+    cs.addCut(new cutBoundLower("d3rs/d3Ers")); parvec.push_back(15);
+    cs.addCut(new cutBoundLower("vrrs"));       parvec.push_back(3.0);
+}
+
+void Cuts::selectCutB0_120905()
+{
+    // Cut on d3rs dropped. See Journal 14 p142
+    cs.addCut(new cutConst("anatype==2")); parvec.push_back(0); // this protects from accidential use of another channel with these cuts
+    // jp
+    cs.addCut(new cutBoundLower("rptmu1"));      parvec.push_back(3.0);
+    cs.addCut(new cutBoundLower("rptmu2"));      parvec.push_back(3.0);
+    // Ks
+    cs.addCut(new cutSymWindow("mrs",0.497614));   parvec.push_back(0.012);
+    cs.addCut(new cutSymWindowVeto("L0hypo",1.115683));   parvec.push_back(0.010);
+    cs.addCut(new cutBoundLower("rptha1"));     parvec.push_back(1.8);
+    cs.addCut(new cutBoundLower("rptha2"));     parvec.push_back(0.50);
+    cs.addCut(new cutBoundLower("probrs"));     parvec.push_back(0.15);
+    cs.addCut(new cutBoundUpper("alphars"));    parvec.push_back(0.012);
+    cs.addCut(new cutBoundLower("d3rs/d3Ers")); parvec.push_back(15);
+    cs.addCut(new cutBoundLower("vrrs"));       parvec.push_back(3.0);
+}
+
 void Cuts::selectCutB0_110628exp()
 {
     // Cuts reflecting latest changed to triggers
@@ -883,6 +1006,9 @@ void Cuts::selectCutTrgMatch() { cs.addCut(new cutConst("HLTmatch==1")); parvec.
 void Cuts::selectCutTrgJpsi() { cs.addCut(new cutConst("HLTokJpsi==1")); parvec.push_back(0); }
 void Cuts::selectCutTrgJpsiDispl() { cs.addCut(new cutConst("HLTokDisplJpsi==1")); parvec.push_back(0); }
 void Cuts::selectCutTrgJpsiBarrel() { cs.addCut(new cutConst("HLTokBarrelJpsi==1")); parvec.push_back(0); }
+
+void Cuts::selectCutTrgJpsiDisplMCPseudo() { cs.addCut(new cutConst("HLTokDisplJpsiMCpseudo==1")); parvec.push_back(0); }
+void Cuts::selectCutTrgJpsiBarrelMCPseudo() { cs.addCut(new cutConst("HLTokBarrelJpsiMCpseudo==1")); parvec.push_back(0); }
 
 // some special cuts
 void Cuts::selectCutMlbWindow_110215()

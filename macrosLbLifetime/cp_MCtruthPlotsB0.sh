@@ -19,3 +19,21 @@ cp -v {doAnalysis01plots*_,$dest/}DtruthVsD3dprof_cutsB0.pdf
 cp -v {doAnalysis01plots*_,$dest/}PtruthVsP3dprofB0.pdf
 cp -v {doAnalysis01plots*_,$dest/}PtruthVsP3dprof_cutsB0.pdf
 
+
+#cp -v {doAnalysis01plots*_,$dest/}MCtruthCt3dLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthCt3dTruthLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthCt3dCutTruthLb.pdf
+#cp -v {doAnalysis01plots*_,$dest/}MCtruthd3dLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthd3dTruthLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthd3dCutTruthLb.pdf
+#cp -v {doAnalysis01plots*_,$dest/}MCtruthpLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthpTruthLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}MCtruthpCutTruthLb.pdf
+
+cp -v {doAnalysis01plots*_,$dest/}TtruthVsT3dprofLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}TtruthVsT3dprof_cutsLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}DtruthVsD3dprofLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}DtruthVsD3dprof_cutsLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}PtruthVsP3dprofLb.pdf
+cp -v {doAnalysis01plots*_,$dest/}PtruthVsP3dprof_cutsLb.pdf
+

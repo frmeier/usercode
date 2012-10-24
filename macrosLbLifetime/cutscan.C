@@ -1,5 +1,5 @@
 //#include "cut.C"
-#include "cuts.C"
+#include "Cuts.h"
 #include "fitfunc.C"
 #include <iostream>
 #include <string>
@@ -93,7 +93,7 @@ cutscanresult doScan(TTree *t, TCanvas *c, TH1F *h, fitfuncBase *ff, const std::
 	ff->reset();
 	ff->doFit(newh);
 	// fill result vectors
-	if(ff->getSig()>=0 && ff->getBgr()>=0 && ff->getChi2()<70) // omit rubish entries
+	if(ff->getSig()>=0 && ff->getBgr()>=0) // omit rubish entries
 	{
 	    csr.par.push_back(cutval);
 	    csr.SoverSqrtSB.push_back(ff->getSoverSqrtSB());
@@ -207,11 +207,12 @@ void cutscan(std::string fullPath)
 	cout << "Succesfully opened file " << fullPath << endl;
 
     // set what variable from the TTree to plot
-    const std::string plotstring = "mlb";
+    const std::string plotstring = "mbc";
 
     // Select cuts to use
     Cuts cuts;
-    cuts.selectCut("acc04Lb","HLT_jpsiBarrel","lb07");
+    //cuts.selectCut("acc06Lb", "HLT_jpsiBarrel", "HLT_matched", "lb13exp", "muSoft");
+    cuts.selectCut("HLT_jpsiBarrel", "HLT_matched", "lb13exp");
 
     // Cutstring
     cutSet cs = cuts.cs;
@@ -254,19 +255,22 @@ void cutscan(std::string fullPath)
     //cutlist.push_back(cutscanitem(cs.getCutPos("problb"),21,0.0,0.10));
     //cutlist.push_back(cutscanitem(cs.getCutPos("ptgangDRl0"),12,0.001,0.013));
     //cutlist.push_back(cutscanitem(cs.getCutPos("ptgangDRlb"),12,0.05,0.60));
-    cutlist.push_back(cutscanitem(cs.getCutPos("mjp"),12,0.060,0.300));
-    cutlist.push_back(cutscanitem(cs.getCutPos("rpt1m"),16,2.0,5.0));
-    cutlist.push_back(cutscanitem(cs.getCutPos("rpt2m"),16,2.0,5.0));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ptjp"),11,5,15));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ml0"),12,0.002,0.027));
+
+    //cutlist.push_back(cutscanitem(cs.getCutPos("mjp"),12,0.060,0.300));
+    cutlist.push_back(cutscanitem(cs.getCutPos("rptmu1"),16,3.0,5.0));
+    cutlist.push_back(cutscanitem(cs.getCutPos("rptmu2"),16,3.0,5.0));
+    //cutlist.push_back(cutscanitem(cs.getCutPos("ptjp"),11,5,15));
+    cutlist.push_back(cutscanitem(cs.getCutPos("mrs"),20,0.002,0.020));
     cutlist.push_back(cutscanitem(cs.getCutPos("Kshypo"),10,0.002,0.020));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ptl0"),13,2.0,5.0));
-    cutlist.push_back(cutscanitem(cs.getCutPos("rptpr"),11,1.0,5.0));
-    cutlist.push_back(cutscanitem(cs.getCutPos("rptpi"),12,0.1,3.3));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ptgangDRl0"),26,0.005,0.060));
-    cutlist.push_back(cutscanitem(cs.getCutPos("d3l0"),12,0.5,10));
-    cutlist.push_back(cutscanitem(cs.getCutPos("d3l0/d3El0"),12,1.0,16));
-    cutlist.push_back(cutscanitem(cs.getCutPos("ptlb"),16,5.0,15.0));
+    //cutlist.push_back(cutscanitem(cs.getCutPos("ptl0"),13,2.0,5.0));
+    cutlist.push_back(cutscanitem(cs.getCutPos("rptha1"),20,0.9,2.5));
+    cutlist.push_back(cutscanitem(cs.getCutPos("rptha2"),24,0.2,0.7));
+    cutlist.push_back(cutscanitem(cs.getCutPos("probrs"),16,0.0,0.30));
+    cutlist.push_back(cutscanitem(cs.getCutPos("alphars"),26,0.005,0.030));
+    //cutlist.push_back(cutscanitem(cs.getCutPos("d3rs"),12,0.5,10));
+    cutlist.push_back(cutscanitem(cs.getCutPos("d3rs/d3Ers"),20,1.0,30));
+    //cutlist.push_back(cutscanitem(cs.getCutPos("ptlb"),16,5.0,15.0));
+    cutlist.push_back(cutscanitem(cs.getCutPos("vrrs"),21,0.0,10.0));
 
     /*
     cutlist.push_back(cutscanitem(cs.getCutPos("iprpr"),12,1.1,4.7));
@@ -305,13 +309,14 @@ void cutscan(std::string fullPath)
     //fitfuncGausBgrExpConst *fitfunc = new fitfuncGausBgrExpConst();
     //fitfunc->setInitValues(3,6,0,0,1,5.62,.1,2); // for Gaus + slope
     //fitfunc->setInitValues(5.23,6.03,14,-1.8,10,5.62,.02,2); // for Gaus + slope
-    fitfunc->setInitValues(5.40,6.30,14,-1.8,10,5.62,.02,2); // for Gaus + slope, Lb, moved to right
+    ///fitfunc->setInitValues(5.40,6.30,14,-1.8,10,5.62,.02,2); // for Gaus + slope, Lb, moved to right
     //fitfunc->setInitValues(5.0,6.4,120000,-1.95,1,5.62,.1,2); // for Gaus + Exp
     //fitfunc->setInitValues(5.1,6.4,120000,-1.5,1,5.62,.1,1,2); // for Gaus + Exp + Const
+    fitfunc->setInitValues(5.40,6.20,14,-1.8,10,5.62,.02,2); // for Gaus + slope, Lb, moved to right
 
     // Set the histo for ALL fits
-    const valueType histoXmin(4.5), histoXmax(6.5);
-    TH1F *h = new TH1F("h1","h1",80,histoXmin,histoXmax);
+    const valueType histoXmin(5.0), histoXmax(6.2);
+    TH1F *h = new TH1F("h1","h1",120,histoXmin,histoXmax);
 
     // limits for the mass summary plot
     const valueType histoSummaryXmin(5.5), histoSummaryXmax(5.7);

@@ -95,3 +95,33 @@ void test(double l)
     doMassT3dPlot(tree, "Titel", l);
 }
 
+void doSomeMassPlots()
+{
+    /*
+    doMassT3dPlot("../data/vrt_r456_Lb_sigMC_Lb_lb12_barrel.root", "", 0 ,false);
+    gPad->SaveAs("r456_Lb_MC_m_t_barrel.pdf");
+    doMassT3dPlot("../data/vrt_r456_Lb_sigMC_Lb_lb12_displ.root", "", 0 ,false);
+    gPad->SaveAs("r456_Lb_MC_m_t_displ.pdf");
+    */
+
+    //doMassT3dPlot("../data/vrt_r458_Lb_data_Lb_lb12_barrel.root", "", 0 ,false);
+    doMassT3dPlot("../data/vrt_r548_lb_data_lb14.root", "", 0 ,false);
+    gPad->SaveAs("r548_Lb_data_m_t_barrel.pdf");
+    //doMassT3dPlot("../data/vrt_r458_Lb_data_Lb_lb12_displ.root", "", 0 ,false);
+    //gPad->SaveAs("r458_Lb_data_m_t_displ.pdf");
+
+    /*
+    doMassT3dPlot("../data/vrt_r460_B0_sigMC_B0_B006_barrel.root", "", 0 ,false);
+    gPad->SaveAs("r460_B0_MC_m_t_barrel.pdf");
+    doMassT3dPlot("../data/vrt_r460_B0_sigMC_B0_B006_displ.root", "", 0 ,false);
+    gPad->SaveAs("r460_B0_MC_m_t_displ.pdf");
+    */
+
+    //doMassT3dPlot("../data/vrt_r461_B0_data_B0_B006_barrel.root", "", 0 ,false);
+    doMassT3dPlot("../data/vrt_r479_B0_data_B008.root", "", 0 ,false);
+    gPad->SaveAs("r479_B0_data_m_t_barrel.pdf");
+    //doMassT3dPlot("../data/vrt_r461_B0_data_B0_B006_displ.root", "", 0 ,false);
+    //gPad->SaveAs("r461_B0_data_m_t_displ.pdf");
+}
+
+
