@@ -22,48 +22,20 @@
 using std::string;
 using std::auto_ptr;
 
-std::vector<double> makeDynamicBins(TTree *t, string branchname, string cut, int nBins, double lo, double hi, const double factor = 1)
+void doFit(TEfficiency *h, double lo, double hi, double initP0)
 {
-    typedef std::list<double> listtype;
-    listtype valuelist;
+    // Gerade
+    TF1* f1 = new TF1("f1","[0]*(1+[1]*x)",lo>0 ? lo : 0,hi);
+    //f1->SetParameters(initP0, -0.03e12);
+    f1->SetParameters(initP0, -0.0);
 
-    t->Draw(">>lst", cut.c_str());
-    TEventList *lst = (TEventList*)gDirectory->Get("lst");
+    // Turn-on curve
+    //TF1* f1 = new TF1("f1","[0]*(1+[1]*x+[2]/(1+exp(-x/[3])))",lo>0 ? lo : 0,hi);
+    //f1->SetParameters(initP0, -0.00, 1,1);
+    //f1->SetParLimits(2,0,10);
 
-    double value;
-    t->SetBranchAddress(branchname.c_str(), &value);
-    const int N = lst->GetN();
-
-    for (int i=0; i!=N; i++)
-    {
-	t->GetEntry(lst->GetEntry(i));
-	value*=factor;
-	if (value>=lo && value <=hi)
-	{
-	    valuelist.push_back(value);
-	}
-    }
-    valuelist.sort();
-    const int entriesPerBin = valuelist.size() / nBins;
-
-    std::vector<double> binvector;
-    binvector.push_back(lo);
-
-    int i = 0;
-    for (listtype::const_iterator it = valuelist.begin(); it!=valuelist.end(); it++, i++)
-    {
-	if (i==0) continue;
-	if (i % entriesPerBin == 0) binvector.push_back(*it);
-    }
-    binvector.pop_back(); // remove last one (ugly, but easier than awful logic in loop)
-    binvector.push_back(hi); // and replace it with given boundary
-    for (std::vector<double>::const_iterator it = binvector.begin(); it!=binvector.end(); it++)
-	cout << *it << " ";
-    cout << endl;
-
-    return binvector;
+    h->Fit(f1, "I");
 }
-
 
 // makes an TEfficiency plot. cutPass is just what you need in addition to cutAll
 void doTEffPlot(TCanvas *c, TTree *t, string hname, string title, string toDraw, int nBins, double lo, double hi,
@@ -118,10 +90,7 @@ void doTEffPlotFit(TCanvas *c, TTree *t, string hname, string title, string toDr
     tl->Draw();
     gPad->Update();
 
-    // now we fit a pol1
-    TF1* f1 = new TF1("f1","[0]*(1+[1]*x)",lo>0 ? lo : 0,hi);
-    f1->SetParameters(averageEff, -0.00);
-    heff->Fit(f1, "I");
+    doFit(heff.get(), lo, hi, averageEff);
 
     c->SaveAs((hname+".pdf").c_str());
 
@@ -167,9 +136,7 @@ void doTEffPlotFit(TCanvas *c, TTree *t, string hname, string title, string toDr
     // now we fit a pol1
     const double lo = bins[0];
     const double hi = bins[bins.size()-1];
-    TF1* f1 = new TF1("f1","[0]*(1+[1]*x)",lo>0 ? lo : 0,hi);
-    f1->SetParameters(averageEff, -0.00);
-    heff->Fit(f1, "I");
+    doFit(heff.get(), lo, hi, averageEff);
 
     c->SaveAs((hname+".pdf").c_str());
 
@@ -210,10 +177,7 @@ void doTEffPlotFit(TCanvas *c, string hnamepass, string hnameall, string hname, 
     const double hi = hpass->GetBinLowEdge(hpass->GetNbinsX()+1);
 
     // now we fit a pol1
-    TF1* f1 = new TF1("f1","[0]*(1+[1]*x)",lo,hi);
-    //f1->SetParameters(averageEff, -0.03e12);
-    f1->SetParameters(averageEff, 0);
-    heff->Fit(f1, "I");
+    doFit(heff.get(), lo, hi, averageEff);
 
     c->SaveAs((hname+".pdf").c_str());
 

@@ -616,9 +616,9 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 
     // Selection of plot groups
     const bool doLb(true); // plots for Lb
-    const bool doB0(false); // plots for Lb
-    const bool doMC(false); // do MC plots as well
-    const bool doMassPlots(true); // mass plots including fit
+    const bool doB0(true); // plots for Lb
+    const bool doMC(true); // do MC plots as well
+    const bool doMassPlots(false); // mass plots including fit
     const bool doMassPlotsBinned(false); // mass plots including fit
     const bool doMassPlotsHLT(false); // mass plots including fit
     const bool doMassPlotsPtYbins(false); // mass plots including fit
@@ -626,7 +626,7 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
     const bool doMCtruthPlots(false); // MC truth plots
     const bool doCutsPlots(false); // cut plots
     const bool doCuts2dPlots(false); // cut plots 2d
-    const bool doSidebandPlots(false); // cut plots using improved sidebandsubtraction
+    const bool doSidebandPlots(true); // cut plots using improved sidebandsubtraction
     const bool doTriggerPlots(false); // trigger sanity plot
     const bool doEfficiencyPlotFitterPlots(false); // make efficiency plots
     const bool doJsonFiles(false); // generate json files on events selected in mass plots
@@ -634,8 +634,8 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
     const bool doLifetimeFit(false); // lifetime fits
     const bool doTPjpsi(false); // T&P trigger efficiencies
     const bool doMCchannelPlots(false);
-    const bool doB0tTruthPlots(false); // checks sanity of lifetime reconstruction
-    const bool doLbtTruthPlots(false); // checks sanity of lifetime reconstruction
+    const bool doB0tTruthPlots(true); // checks sanity of lifetime reconstruction
+    const bool doLbtTruthPlots(true); // checks sanity of lifetime reconstruction
     const bool doBgrChannelPlots(false); // background plots for Lb
 
     // Select cuts from cuts.C
@@ -737,8 +737,8 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
     //filesLbMC.add(Datafile(path+"run414.root","Bla",0,0,0,0));
     //filesLbMC.add(Datafile(path+"run415.root","Bla",0,0,0,0));
     //filesLbMC.add(Datafile(path+"run456.root","Bla",0,0,0,0));
-    //filesLbMC.add(Datafile(path+"run547.root","Bla",0,0,0,0)); // private MC
-    filesLbMC.add(Datafile(path+"run552.root","Bla",0,0,0,0)); // official MC
+    filesLbMC.add(Datafile(path+"run547.root","Bla",0,0,0,0)); // private MC
+    //filesLbMC.add(Datafile(path+"run552.root","Bla",0,0,0,0)); // official MC
 
     Datafiles filesB0MC;
     //filesB0MC.add(Datafile(path+"run206.root","Bla",0,0,0,0));
@@ -1427,7 +1427,7 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	cutIsSig.selectCut("isSig","isMCmatch");
 	Cuts cutData = cutAnalLb;
 	Cuts cutMC = cutAnalLb+cutIsSig;
-	const bool lball(false); // select true if you want to get bot Lb and Lbbar
+	const bool lball(true); // select true if you want to get bot Lb and Lbbar
 	const bool lbbar(true); // select true if lball==false and you want to get Lbbar, false would give Lb only
 	if (!lball)
 	{
@@ -1510,6 +1510,7 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	cutPlotSidebandDataMCLb(treeLbData, treeLbMC, canvaspager, "d3bc", false, 50, 0, 1, cutData, cutMC, "d_{3}(#Lambda_{b}) "+addTitle, "d3bc"+addHname, "d_{3}(#Lambda_{b})", "cm", fitresCache);
 	cutPlotSidebandDataMCLb(treeLbData, treeLbMC, canvaspager, "pbc", false, 30, 0, 60, cutData, cutMC, "p(#Lambda_{b}) "+addTitle, "pbc"+addHname, "p(#Lambda_{b})", "GeV/c", fitresCache);
 	cutPlotSidebandDataMCLb(treeLbData, treeLbMC, canvaspager, "ct3dbc", false, 50, -5e-12, 20e-12, cutData, cutMC, "t_{3}(#Lambda_{b}) "+addTitle, "ct3dbc"+addHname, "t_{3}(#Lambda_{b})", "s", fitresCache);
+	cutPlotSidebandDataMCLb(treeLbData, treeLbMC, canvaspager, "ct3dbcE", false, 50, 0e-12, .4e-12, cutData, cutMC, "#sigma(t_{3}(#Lambda_{b})) "+addTitle, "ct3dbcE"+addHname, "#sigma(t_{3}(#Lambda_{b}))", "s", fitresCache);
     }
 
     if (doSidebandPlots && doB0 && doMC)
@@ -1576,6 +1577,7 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	cutPlotSidebandDataMCB0(treeB0Data, treeB0MC, canvaspager, "d3bc", false, 50, 0, 1, cutData, cutMC, "d_{3}(B^{0}) "+addTitle, "d3bc"+addHname, "d_{3}(B^{0})", "cm", fitresCache);
 	cutPlotSidebandDataMCB0(treeB0Data, treeB0MC, canvaspager, "pbc", false, 30, 0, 60, cutData, cutMC, "p(B^{0}) "+addTitle, "pbc"+addHname, "p(B^{0})", "GeV/c", fitresCache);
 	cutPlotSidebandDataMCB0(treeB0Data, treeB0MC, canvaspager, "ct3dbc", false, 50, -5e-12, 20e-12, cutData, cutMC, "t_{3}(B^{0}) "+addTitle, "ct3dbc"+addHname, "t_{3}(B^{0})", "s", fitresCache);
+	cutPlotSidebandDataMCB0(treeB0Data, treeB0MC, canvaspager, "ct3dbcE", false, 50, 0e-12, .4e-12, cutData, cutMC, "#sigma(t_{3}(B^{0})) "+addTitle, "ct3dbcE"+addHname, "#sigma(t_{3}(B^{0}))", "s", fitresCache);
     }
 
     // ===================================================================================
@@ -2192,15 +2194,34 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	const double massB0(5.2794), massLo(massB0-.1), massHi(massB0+.1);
 
 	canvaspager.cdNext("MCtruthCt3d"+obj2plot);
-	do1dPlotGaus(treeB0MC, "MCtruthCt3d"+obj2plot, "1e12*(ct3dbc-ctbctruth)", "", 200, -ctWindow, ctWindow, noTitle ? "" : "Lifetime of "+obj4root+" 3d, all candidates found", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
-	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime of "+obj4html+" 3d, all candidates found");
+	do1dPlotGaus(treeB0MC, "MCtruthCt3d"+obj2plot, "1e12*(ct3dbc-ctbctruth)", "", 200, -ctWindow, ctWindow, noTitle ? "" : "Decay time of "+obj4root+" 3d, all candidates found", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Decay time of "+obj4html+" 3d, all candidates found");
 	canvaspager.cdNext("MCtruthCt3dTruth"+obj2plot);
-	do1dPlotGaus(treeB0MC, "MCtruthCt3dTruth"+obj2plot, "1e12*(ct3dbc-ctbctruth)", "isSig==1&&isMCmatch==1", 200, -ctWindow, ctWindow, noTitle ? "" : "Lifetime of "+obj4root+" 3d, truth matched candidates", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
-	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime of "+obj4html+" 3d, truth matched candidates");
+	do1dPlotGaus(treeB0MC, "MCtruthCt3dTruth"+obj2plot, "1e12*(ct3dbc-ctbctruth)", "isSig==1&&isMCmatch==1", 200, -ctWindow, ctWindow, noTitle ? "" : "Decay time of "+obj4root+" 3d, truth matched candidates", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Decay time of "+obj4html+" 3d, truth matched candidates");
 	canvaspager.cdNext("MCtruthCt3dCutTruth"+obj2plot);
-	do1dPlotGaus(treeB0MC, "MCtruthCt3dCutTruth"+obj2plot, "1e12*(ct3dbc-ctbctruth)", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -ctWindow, ctWindow, noTitle ? "" : "Lifetime of "+obj4root+" 3d, truth matched candidates, cuts", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
-	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime of "+obj4html+" 3d, truth matched candidates, cuts");
+	do1dPlotGaus(treeB0MC, "MCtruthCt3dCutTruth"+obj2plot, "1e12*(ct3dbc-ctbctruth)", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -ctWindow, ctWindow, noTitle ? "" : "Decay time of "+obj4root+" 3d, truth matched candidates, cuts", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Decay time of "+obj4html+" 3d, truth matched candidates, cuts");
 
+	//-----
+	if (flgDoHtmlReport) htrep->addH("Pulls",'2');
+	canvaspager.cdNext("MCtruthCt3dPull"+obj2plot);
+	do1dPlotGaus(treeB0MC, "MCtruthCt3dPull"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "", 200, -10, 10, noTitle ? "" : "Lifetime pull of "+obj4root+" 3d, all candidates found", "pull t_{reco,3d}("+obj4root+")", "#sigma");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, all candidates found");
+
+	canvaspager.cdNext("MCtruthCt3dPullTruth"+obj2plot);
+	do1dPlotGaus(treeB0MC, "MCtruthCt3dPullTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "isSig==1&&isMCmatch==1", 200, -10, 10, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates", "pull t_{reco,3d}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, truth matched candidates");
+
+	canvaspager.cdNext("MCtruthCt3dPullCutTruth"+obj2plot);
+	do1dPlotGaus(treeB0MC, "MCtruthCt3dPullCutTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -10, 10, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates, cuts", "pull t_{reco,3d}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, truth matched candidates, cuts");
+
+	canvaspager.cdNext("Ct3dECut"+obj2plot);
+	do1dPlot(treeB0MC, "Ct3dECut"+obj2plot, "ct3dbcE*1e12", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, 0, 0.2, noTitle ? "" : "Decay time error "+obj4root+" 3d, truth matched candidates, cuts", "error of t_{reco,3d}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime error distribution of "+obj4html+" 3d, truth matched candidates, cuts");
+
+	//-----
 	// ct3dbc*pbc*5.67843e+09 ist nichts anderes als t*p*c/m
 	if (flgDoHtmlReport) htrep->addH("Flight length",'2');
 	canvaspager.cdNext("MCtruthd3d"+obj2plot);
@@ -2224,6 +2245,10 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do1dPlotGaus(treeB0MC, "MCtruthpCutTruth"+obj2plot, "pbc-pbctruth", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -pWindow, pWindow, noTitle ? "" : "Momentum of "+obj4root+" truth matched candidates, cuts", "p_{reco}("+obj4root+")-p_{truth}("+obj4root+")", "GeV/c");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Momentum of "+obj4html+" truth matched candidates, cuts");
 
+	if (flgDoHtmlReport) htrep->addH("Momentum",'2');
+	canvaspager.cdNext("MCtruthtPullCutTruth"+obj2plot);
+	do1dPlotGaus(treeB0MC, "MCtruthtPullCutTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -5, 5, noTitle ? "" : "Decay time pull of "+obj4root+" truth matched candidates, cuts", "(t_{reco}("+obj4root+")-t_{truth}("+obj4root+"))/(#sigma_{t}_{reco}("+obj4root+")", "");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Momentum of "+obj4html+" truth matched candidates, cuts");
 
 	// ---------------------------------------------------
 	if (flgDoHtmlReport) htrep->addH("Profile plots for 3d measurement",'2');
@@ -2232,10 +2257,34 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do2dProfilePlot(treeB0MC, "TtruthVsT3dprof"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", "isSig==1&&isMCmatch==1", 32, 0, 16, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
 
+	canvaspager.cdNext("TtruthVsT3dprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsT3dprofVar"+obj2plot, "ctbctruth", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 30, 0, 5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}("+obj4root+")","ps", "#Deltat","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
+	canvaspager.cdNext("TtruthVsPtprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsPtprofVar"+obj2plot, "ptbctruth", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 30, 0, 30, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","p_{t,truth}("+obj4root+")","GeV/c", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
+	canvaspager.cdNext("TtruthVsEtaprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsEtaprofVar"+obj2plot, "etabc", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 50, -2.5, 2.5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","#eta("+obj4root+")","", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
 	canvaspager.cdNext("TtruthVsT3dprof_cuts"+obj2plot);
 	do2dProfilePlot(treeB0MC, "TtruthVsT3dprof_cuts"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 32, 0, 16, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	//do2dProfilePlot(treeB0MC, "TtruthVsT3dprof_cuts"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 10, 0, 5, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, cuts");
+
+	canvaspager.cdNext("TtruthVsT3dprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsT3dprofVar_cuts"+obj2plot, "ctbctruth", "ct3dbc-ctbctruth", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}("+obj4root+")","ps", "#Deltat","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
+
+	canvaspager.cdNext("TtruthVsPtprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsPtprofVar_cuts"+obj2plot, "ptbctruth", "ct3dbc-ctbctruth", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 30, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","p_{t,truth}("+obj4root+")","GeV/c", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
+
+	canvaspager.cdNext("TtruthVsEtaprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "TtruthVsEtaprofVar_cuts"+obj2plot, "etabc", "ct3dbc-ctbctruth", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 50, -2.5, 2.5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","#eta("+obj4root+")","", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
 
 	if (flgDoHtmlReport) htrep->addH("Flight length",'2');
 	canvaspager.cdNext("DtruthVsD3dprof"+obj2plot);
@@ -2255,6 +2304,35 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do2dProfilePlot(treeB0MC, "PtruthVsP3dprof_cuts"+obj2plot, "pbc-pbctruth:pbctruth", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 25, 10, 100, -4*pWindow, +4*pWindow, noTitle ? "" : "p-p_truth vs. p","p_{truth}","GeV/c", "#Deltap","GeV/c");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"p-p<sub>truth</sub> vs. p, cuts");
 
+	// ---------------------------------------------------
+	if (flgDoHtmlReport) htrep->addH("SOme plots featuring per-event errors",'2');
+
+	canvaspager.cdNext("tEVsT3dprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsT3dprofVar"+obj2plot, "ctbctruth", "ct3dbcE", "isSig==1&&isMCmatch==1", 30, 0, 5, 0, 2, noTitle ? "" : "error t_{3d} vs. t","t_{truth}("+obj4root+")","ps", "error of t","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	canvaspager.cdNext("tEVsPtprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsPtprofVar"+obj2plot, "ptbctruth", "ct3dbcE", "isSig==1&&isMCmatch==1", 30, 0, 30, 0, 2, noTitle ? "" : "error t_{3d} vs. t","p_{t,truth}("+obj4root+")","GeV/c", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	canvaspager.cdNext("tEVsetaprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsetaprofVar"+obj2plot, "etabc", "ct3dbcE", "isSig==1&&isMCmatch==1", 50, -2.5, 2.5, 0, 2, noTitle ? "" : "error t_{3d} vs. t","#eta("+obj4root+")","", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	//-----
+	if (flgDoHtmlReport) htrep->addH("Cuts",'2');
+
+	canvaspager.cdNext("tEVsT3dprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsT3dprofVar_cuts"+obj2plot, "ctbctruth", "ct3dbcE", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 5, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","t_{truth}("+obj4root+")","ps", "error of t","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
+
+	canvaspager.cdNext("tEVsPtprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsPtprofVar_cuts"+obj2plot, "ptbctruth", "ct3dbcE", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 30, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","p_{t,truth}("+obj4root+")","GeV/c", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
+
+	canvaspager.cdNext("tEVsetaprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeB0MC, "tEVsetaprofVar_cuts"+obj2plot, "etabc", "ct3dbcE", cutAnalB0MC.getCut()+"&&isSig==1&&isMCmatch==1", 50, -2.5, 2.5, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","#eta("+obj4root+")","", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
     }
 
     if (doLbtTruthPlots && doLb && doMC)
@@ -2282,15 +2360,23 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do1dPlotGaus(treeLbMC, "MCtruthCt3dCutTruth"+obj2plot, "1e12*(ct3dbc-ctbctruth)", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -ctWindow, ctWindow, noTitle ? "" : "Lifetime of "+obj4root+" 3d, truth matched candidates, cuts", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime of "+obj4html+" 3d, truth matched candidates, cuts");
 
+	//-----
+	if (flgDoHtmlReport) htrep->addH("Pulls",'2');
 	canvaspager.cdNext("MCtruthCt3dPull"+obj2plot);
-	do1dPlotGaus(treeLbMC, "MCtruthCt3dPull"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "", 200, -5, 5, noTitle ? "" : "Lifetime pull of "+obj4root+" 3d, all candidates found", "pull t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "#sigma");
+	do1dPlotGaus(treeLbMC, "MCtruthCt3dPull"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "", 200, -10, 10, noTitle ? "" : "Lifetime pull of "+obj4root+" 3d, all candidates found", "pull t_{reco,3d}("+obj4root+")", "#sigma");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, all candidates found");
+
 	canvaspager.cdNext("MCtruthCt3dPullTruth"+obj2plot);
-	do1dPlotGaus(treeLbMC, "MCtruthCt3dPullTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "isSig==1&&isMCmatch==1", 200, -5, 5, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
+	do1dPlotGaus(treeLbMC, "MCtruthCt3dPullTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", "isSig==1&&isMCmatch==1", 200, -10, 10, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates", "pull t_{reco,3d}("+obj4root+")", "ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, truth matched candidates");
+
 	canvaspager.cdNext("MCtruthCt3dPullCutTruth"+obj2plot);
-	do1dPlotGaus(treeLbMC, "MCtruthCt3dPullCutTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -5, 5, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates, cuts", "t_{reco,3d}("+obj4root+")-t_{truth}("+obj4root+")", "ps");
+	do1dPlotGaus(treeLbMC, "MCtruthCt3dPullCutTruth"+obj2plot, "(ct3dbc-ctbctruth)/ct3dbcE", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 100, -10, 10, noTitle ? "" : "Lifetime pulls of "+obj4root+" 3d, truth matched candidates, cuts", "pull t_{reco,3d}("+obj4root+")", "ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime pulls of "+obj4html+" 3d, truth matched candidates, cuts");
+
+	canvaspager.cdNext("Ct3dECut"+obj2plot);
+	do1dPlot(treeLbMC, "Ct3dECut"+obj2plot, "ct3dbcE*1e12", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 100, 0, 0.2, noTitle ? "" : "Decay time error "+obj4root+" 3d, truth matched candidates, cuts", "error of t_{reco,3d}("+obj4root+")", "ps");
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(), "Lifetime error distribution of "+obj4html+" 3d, truth matched candidates, cuts");
 
 	//-----
 	if (flgDoHtmlReport) htrep->addH("Flight length",'2');
@@ -2324,10 +2410,35 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do2dProfilePlot(treeLbMC, "TtruthVsT3dprof"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", "isSig==1&&isMCmatch==1", 32, 0, 16, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
 
+	canvaspager.cdNext("TtruthVsT3dprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsT3dprofVar"+obj2plot, "ctbctruth", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 30, 0, 5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}("+obj4root+")","ps", "#Deltat","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
+	canvaspager.cdNext("TtruthVsPtprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsPtprofVar"+obj2plot, "ptbctruth", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 30, 0, 30, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","p_{t,truth}("+obj4root+")","GeV/c", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
+	canvaspager.cdNext("TtruthVsEtaprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsEtaprofVar"+obj2plot, "etabc", "ct3dbc-ctbctruth", "isSig==1&&isMCmatch==1", 50, -2.5, 2.5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","#eta("+obj4root+")","", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched");
+
 	canvaspager.cdNext("TtruthVsT3dprof_cuts"+obj2plot);
 	do2dProfilePlot(treeLbMC, "TtruthVsT3dprof_cuts"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 32, 0, 16, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	//do2dProfilePlot(treeLbMC, "TtruthVsT3dprof_cuts"+obj2plot, "1e12*(ct3dbc-ctbctruth):1e12*(ctbctruth)", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 10, 0, 5, -ctWindow, +ctWindow, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}","ps", "#Deltat","ps");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, cuts");
+
+	canvaspager.cdNext("TtruthVsT3dprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsT3dprofVar_cuts"+obj2plot, "ctbctruth", "ct3dbc-ctbctruth", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","t_{truth}("+obj4root+")","ps", "#Deltat","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
+
+	canvaspager.cdNext("TtruthVsPtprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsPtprofVar_cuts"+obj2plot, "ptbctruth", "ct3dbc-ctbctruth", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 30, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","p_{t,truth}("+obj4root+")","GeV/c", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
+
+	canvaspager.cdNext("TtruthVsEtaprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "TtruthVsEtaprofVar_cuts"+obj2plot, "etabc", "ct3dbc-ctbctruth", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 50, -2.5, 2.5, -ctWindow*.4, +ctWindow*.4, noTitle ? "" : "t_{3d}-t_truth vs. t","#eta("+obj4root+")","", "#Deltat","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"t_<sub>3d</sub>-t_truth vs. t, truth matched cuts");
+
 
 	if (flgDoHtmlReport) htrep->addH("Flight length",'2');
 	canvaspager.cdNext("DtruthVsD3dprof"+obj2plot);
@@ -2347,6 +2458,35 @@ void doAnalysis01(std::string mainTitle, bool doPublicationGrade = false)
 	do2dProfilePlot(treeLbMC, "PtruthVsP3dprof_cuts"+obj2plot, "pbc-pbctruth:pbctruth", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 25, 10, 100, -4*pWindow, +4*pWindow, noTitle ? "" : "p-p_truth vs. p","p_{truth}","GeV/c", "#Deltap","GeV/c");
 	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"p-p<sub>truth</sub> vs. p, cuts");
 
+	// ---------------------------------------------------
+	if (flgDoHtmlReport) htrep->addH("SOme plots featuring per-event errors",'2');
+
+	canvaspager.cdNext("tEVsT3dprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsT3dprofVar"+obj2plot, "ctbctruth", "ct3dbcE", "isSig==1&&isMCmatch==1", 30, 0, 5, 0, 2, noTitle ? "" : "error t_{3d} vs. t","t_{truth}("+obj4root+")","ps", "error of t","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	canvaspager.cdNext("tEVsPtprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsPtprofVar"+obj2plot, "ptbctruth", "ct3dbcE", "isSig==1&&isMCmatch==1", 30, 0, 30, 0, 2, noTitle ? "" : "error t_{3d} vs. t","p_{t,truth}("+obj4root+")","GeV/c", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	canvaspager.cdNext("tEVsetaprofVar"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsetaprofVar"+obj2plot, "etabc", "ct3dbcE", "isSig==1&&isMCmatch==1", 50, -2.5, 2.5, 0, 2, noTitle ? "" : "error t_{3d} vs. t","#eta("+obj4root+")","", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched");
+
+	//-----
+	if (flgDoHtmlReport) htrep->addH("Cuts",'2');
+
+	canvaspager.cdNext("tEVsT3dprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsT3dprofVar_cuts"+obj2plot, "ctbctruth", "ct3dbcE", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 5, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","t_{truth}("+obj4root+")","ps", "error of t","ps", 1e12, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
+
+	canvaspager.cdNext("tEVsPtprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsPtprofVar_cuts"+obj2plot, "ptbctruth", "ct3dbcE", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 30, 0, 30, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","p_{t,truth}("+obj4root+")","GeV/c", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
+
+	canvaspager.cdNext("tEVsetaprofVar_cuts"+obj2plot);
+	do2dProfilePlotVariableBins(treeLbMC, "tEVsetaprofVar_cuts"+obj2plot, "etabc", "ct3dbcE", cutAnalLbMC.getCut()+"&&isSig==1&&isMCmatch==1", 50, -2.5, 2.5, 0, 2.0, noTitle ? "" : "error t_{3d} vs. t","#eta("+obj4root+")","", "error of t","ps", 1, 1e12);
+	if (flgDoHtmlReport) htrep->addTableImage(canvaspager.getCurPng(),"tE_<sub>3d</sub> vs. t, truth matched cuts");
     }
 
     // ===================================================================================

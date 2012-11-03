@@ -37,7 +37,7 @@ void LbMasses()
     msrmts.push_back(Msrmt(1.537,.045,.045,.014,.014,"02-09","CDF2","J/#psi#Lambda"));
     msrmts.push_back(Msrmt(1.303,.075,.075,.035,.035,"02-11","D0","J/#psi#Lambda"));
     msrmts.push_back(Msrmt(1.449,.036,.036,.017,.017,"2011","ATLAS","J/#psi#Lambda"));
-    msrmts.push_back(Msrmt(1.506,.053,.053,.030,.030,"2011","CMS prel","J/#psi#Lambda"));
+    msrmts.push_back(Msrmt(1.503,.052,.052,.031,.031,"2011","CMS prel","J/#psi#Lambda"));
     //msrmts.push_back(Msrmt());
 
     const int msrmtSize = msrmts.size();

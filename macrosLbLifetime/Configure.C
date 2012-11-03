@@ -16,6 +16,9 @@ typedef struct ConfigData {
   bool constant_prompt_fraction;
   bool single_lt;
   bool single_sig;
+  bool m_t_plot_small;
+  bool ratioplots;
+  bool publication;
   int type;
   double mass_low;
   double mass_high;
@@ -36,8 +39,14 @@ int Configure(TString arguments, ConfigData &cfg)
   cfg.PerEventError=false;
   cfg.single_lt=true;
   cfg.single_sig=false;
+  cfg.m_t_plot_small=false;
+  cfg.ratioplots=true;
+  cfg.publication=false;
   cfg.constant_prompt_fraction=true;
   cfg.type = Lambda_b;
+  if(arguments.Contains("plotsmall",TString::kIgnoreCase)) cfg.m_t_plot_small= true;
+  if(arguments.Contains("noratioplots",TString::kIgnoreCase)) cfg.ratioplots= true;
+  if(arguments.Contains("pub",TString::kIgnoreCase)) { cfg.ratioplots= false; cfg.m_t_plot_small= true; cfg.publication=true; }
   if(arguments.Contains("noprompt",TString::kIgnoreCase)) cfg.prompt_bk = false;
   if(arguments.Contains("nonon",TString::kIgnoreCase)) cfg.nonprompt_bk = false;
   if(arguments.Contains("nobk",TString::kIgnoreCase)) {

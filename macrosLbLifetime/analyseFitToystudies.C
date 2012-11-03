@@ -41,7 +41,10 @@ void analyseFitToystudiesLb(string filename, bool justTau = false)
 {
     fileprefix = "fitToyStudiesLb";
     TTree *t = new TTree;
-    t->ReadFile(filename.c_str(),"tau:tau_err:mass_peak:mass_peak_err:m_sigma1:m_sigma1_err:m_sigma2:m_sigma2_err:frac_m_gauss:frac_m_gauss_err:core_frac:core_frac_err:tau_bk:tau_bk_err:n_nonprompt:n_nonprompt_err:n_prompt:n_prompt_err:n_signal:n_signal_err:prompt_p1:prompt_p1_err:prompt_sigma_core:prompt_sigma_core_err:prompt_sigma_tail:prompt_sigma_tail_err");
+    //t->ReadFile(filename.c_str(),"tau:tau_err:mass_peak:mass_peak_err:m_sigma1:m_sigma1_err:m_sigma2:m_sigma2_err:frac_m_gauss:frac_m_gauss_err:core_frac:core_frac_err:tau_bk:tau_bk_err:n_nonprompt:n_nonprompt_err:n_prompt:n_prompt_err:n_signal:n_signal_err:prompt_p1:prompt_p1_err:prompt_sigma_core:prompt_sigma_core_err:prompt_sigma_tail:prompt_sigma_tail_err"); // alter Fit
+    //t->ReadFile(filename.c_str(),"tau:tau_err:mass_peak:mass_peak_err:m_sigma1:m_sigma1_err:m_sigma2:m_sigma2_err:frac_m_gauss:frac_m_gauss_err:core_frac:core_frac_err:tau_bk:tau_bk_err:n_nonprompt:n_nonprompt_err:n_prompt:n_prompt_err:n_signal:n_signal_err:prompt_p1:prompt_p1_err:prompt_sigma_core:prompt_sigma_core_err:prompt_sigma_tail:prompt_sigma_tail_err:npr_reso_sigma:npr_reso_sigma_err:sig_reso_sigma:sig_reso_sigma_err"); // Fit ohne PEE
+    //t->ReadFile(filename.c_str(),"tau:tau_err:mass_peak:mass_peak_err:m_sigma1:m_sigma1_err:m_sigma2:m_sigma2_err:frac_m_gauss:frac_m_gauss_err:tau_bk:tau_bk_err:n_nonprompt:n_nonprompt_err:n_prompt:n_prompt_err:n_signal:n_signal_err:prompt_p1:prompt_p1_err:reso_bias:reso_bias_err:reso_sigma:reso_sigma_err"); // Fit mit PEE 1 Gauss
+    t->ReadFile(filename.c_str(),"tau:tau_err:mass_peak:mass_peak_err:m_sigma1:m_sigma1_err:m_sigma2:m_sigma2_err:frac_m_gauss:frac_m_gauss_err:tau_bk:tau_bk_err:n_nonprompt:n_nonprompt_err:n_prompt:n_prompt_err:n_signal:n_signal_err:prompt_p1:prompt_p1_err:reso_bias:reso_bias_err:reso_sigma:reso_sigma_err:npr_reso_bias:npr_reso_bias_err:npr_reso_sigma:npr_reso_sigma_err:sig_reso_bias:sig_reso_bias_err:sig_reso_sigma:sig_reso_sigma_err"); // Fit mit PEE 3 Gauss
     //t.Draw("tau>>htau");
     //t->Draw("(tau-1.507)/tau_err>>htau_pulls(100,-5,5)");
     if (!justTau)

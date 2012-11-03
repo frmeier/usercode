@@ -1,13 +1,17 @@
 #ifndef UTILS_H_GUARD
 #define UTILS_H_GUARD
 
+#include "TROOT.h"
 #include "TLatex.h"
+#include "TTree.h"
+#include "TEventList.h"
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <list>
 
 template <typename T>
 std::string toString(T i)
@@ -102,6 +106,50 @@ std::vector<double> variableBinSizeVec(double v0, double v1, double v2 = -9999, 
     if (v12 != -9999) ret.push_back(v12); else return ret;
     if (v13 != -9999) ret.push_back(v13); else return ret;
     return ret;
+}
+
+std::vector<double> makeDynamicBins(TTree *t, string branchname, string cut, int nBins, double lo, double hi, const double factor = 1)
+{
+    typedef std::list<double> listtype;
+    listtype valuelist;
+
+    t->Draw(">>lst", cut.c_str());
+    TEventList *lst = (TEventList*)gDirectory->Get("lst");
+
+    double value;
+    t->SetBranchAddress(branchname.c_str(), &value);
+    const int N = lst->GetN();
+
+    for (int i=0; i!=N; i++)
+    {
+	t->GetEntry(lst->GetEntry(i));
+	value*=factor;
+	if (value>=lo && value <=hi)
+	{
+	    valuelist.push_back(value);
+	}
+    }
+    valuelist.sort();
+    const int entriesPerBin = valuelist.size() / nBins;
+
+    std::vector<double> binvector;
+    binvector.push_back(lo);
+
+    int i = 0;
+    for (listtype::const_iterator it = valuelist.begin(); it!=valuelist.end(); it++, i++)
+    {
+	if (i==0) continue;
+	if (i % entriesPerBin == 0) binvector.push_back(*it);
+    }
+    binvector.pop_back(); // remove last one (ugly, but easier than awful logic in loop)
+    binvector.push_back(hi); // and replace it with given boundary
+    //for (std::vector<double>::const_iterator it = binvector.begin(); it!=binvector.end(); it++)
+    //	cout << *it << " ";
+    //cout << endl;
+    delete lst;
+    t->ResetBranchAddresses();
+
+    return binvector;
 }
 
 #endif

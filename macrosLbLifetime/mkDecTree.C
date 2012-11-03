@@ -16,6 +16,8 @@ using std::string;
 using std::cout;
 using std::endl;
 
+const double timeFactor(1e12); // choose 1e12 if you want to have all data in ps, choose 1 if s
+
 void mkDecTree(string infile, string cut, string outfile, string addCut, double reducedSigma)
 {
     cout << "Infile: " << infile << endl;
@@ -86,11 +88,11 @@ void mkDecTree(string infile, string cut, string outfile, string addCut, double 
 	intree->GetEntry(lst->GetEntry(i));
 	outmass = inmass;
 	outp = inp;
-	outtau = intau;
-	outtauRed = intau-reducedSigma*intauE;
-	outtauE = intauE;
-	outtauTruth = intauTruth;
-	outtauDiff = intau - intauTruth;
+	outtau = intau*timeFactor;
+	outtauRed = intau*timeFactor-reducedSigma*intauE*timeFactor;
+	outtauE = intauE*timeFactor;
+	outtauTruth = intauTruth*timeFactor;
+	outtauDiff = (intau - intauTruth)*timeFactor;
 	outd3sig = (ind3E!=0) ? ind3/ind3E : -9999.0;
 	/*
 	outWeight = 0;

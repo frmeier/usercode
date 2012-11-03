@@ -29,6 +29,7 @@ void Cuts::select1Cut(std::string name)
     if (name == "lb13") { selectCutLb120711(); return; }
     if (name == "lb13exp") { selectCutLb120713(); return; }
     if (name == "lb14") { selectCutLb120905(); return; }
+    if (name == "lb14noveto") { selectCutLb120905(); removeOneCut("Kshypo"); return; }
     // analysis cuts for B0
     if (name == "B001") { selectCutB0_110628(); return; }
     if (name == "B001exp") { selectCutB0_110628exp(); return; }
@@ -39,6 +40,7 @@ void Cuts::select1Cut(std::string name)
     if (name == "B006") { selectCutB0_120523(); return; }
     if (name == "B007") { selectCutB0_120711(); return; }
     if (name == "B008") { selectCutB0_120905(); return; }
+    if (name == "B008noveto") { selectCutB0_120905(); removeOneCut("L0hypo"); return; }
     // acceptance cuts
     if (name == "acc01") { selectCutAcceptance110120(); cout << "WARNING! Cut acc01 is deprecated. Use acc03 instead." << endl; return; }
     if (name == "acc02") { selectCutAcceptance110131(); cout << "WARNING! Cut acc02 is deprecated." << endl; return; }
